@@ -39,3 +39,16 @@
 - DISPLAY BACKLIGHT: a grey ribbon from the Mirror board to a white connector on a shielded board left of the T-con (likely the backlight/LED driver).
 - The flat ribbons with blue ends on the right of the T-con go to the panel edge (internal panel links) and are not touched.
 - Still to photograph: power board connectors and printed voltage labels.
+
+## Power board (photos, Nov 1)
+- MEGMEET PCB MP118TX (transformer EE4015-12V-24V). Outputs printed on the board edge:
+  - J16/CON4 (8-pin): 4x GND, 4x V24
+  - CON3 (4-pin): GND, GND, V24, V24
+  - CON5 (4-pin): GND, GND, V12, V12 (black + orange wires, apparently to the Mirror board's MAIN POWER)
+  - CON2: multi-pin, mostly unpopulated, labels not readable in the photo
+- So the Mirror already has both rails: 24V for the backlight/LED driver (stays wired as-is) and 12V for a controller board. No extra power board needed; this answers the seller's 24V warning.
+- Unknown: the 12V rail's current rating, and whether it can feed the Mirror board and the new controller (needs 12V/4A) at the same time. Fallback: a separate 12V/4A adapter.
+- Backlight control: today the Mirror board drives the LED driver over the grey DISPLAY BACKLIGHT ribbon. Plan per upstream + issue #26: leave that in place (keep the Mirror board powered, factory-reset mode so the backlight doesn't time out), and only move the panel LVDS input to the new controller.
+
+## Decision (Nov 1)
+- Keep the e-qstore DP+HDMI+VGA board. Panel match confirmed, LVDS socket is the standard wire-harness type, and 12V/24V rails exist. Remaining risks: DP version untested by others; confirm the LVDS plug's pin count matches when the kit arrives.
