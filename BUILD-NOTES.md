@@ -31,3 +31,11 @@
 2. Close-up of the T-con's LVDS socket (flat ribbon-style FFC with a locking tab?), with a coin or ruler for scale.
 3. The power board connectors and printed labels (12V / 24V).
 4. Any model-number sticker on the panel or T-con.
+
+## Inspection of our unit (Nov 1, photos)
+- Panel sticker confirms: **BOE DV430FHM-NN5**, revision B9. T-con cover stamped 2021/01/30.
+- Mirror main board: "Mirror v1.1 EVT rev A08", with headers labeled MAIN POWER, DISPLAY LVDS, DISPLAY BACKLIGHT. Rear label: Mirror Model 1.1.
+- Panel LVDS input (under the T-con cover, center of the panel): a narrow wire-to-board socket with a metal latch shell, fed by a twisted-pair wire LVDS cable. It is NOT a flat FFC ribbon, so the upstream README's FFC note doesn't match this socket. This looks like the standard panel-side plug that generic DV430FHM-NN5 controller kits ship with; pin count not yet counted, so confirm when the kit's cable is in hand.
+- DISPLAY BACKLIGHT: a grey ribbon from the Mirror board to a white connector on a shielded board left of the T-con (likely the backlight/LED driver).
+- The flat ribbons with blue ends on the right of the T-con go to the panel edge (internal panel links) and are not touched.
+- Still to photograph: power board connectors and printed voltage labels.
