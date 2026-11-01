@@ -52,3 +52,18 @@
 
 ## Decision (Nov 1)
 - Keep the e-qstore DP+HDMI+VGA board. Panel match confirmed, LVDS socket is the standard wire-harness type, and 12V/24V rails exist. Remaining risks: DP version untested by others; confirm the LVDS plug's pin count matches when the kit arrives.
+
+## To do (updated Nov 1, replaces the list above)
+- [x] Open the Mirror: check T-con connector type, power board voltages. Done, see inspection and power board notes.
+- [x] Contact the seller about cable fit and backlight: no longer needed.
+- [ ] Order the microSD card and micro HDMI cable (in Amazon cart).
+- [ ] When the controller arrives: compare the kit's LVDS plug to the panel socket before unplugging anything.
+- [ ] Put the Mirror in factory-reset mode, move the panel LVDS cable to the new controller, power it from 12V, connect the Pi over HDMI, test.
+- [ ] Flash the Pi, set up kiosk mode.
+- [ ] Build the portal.
+
+## If something goes wrong on first power-up
+- Screen flickers, cuts out or won't stay on: likely not enough 12V current. Try a separate 12V 4A wall adapter.
+- LVDS plug doesn't match the socket: need a matching LVDS cable, or return the kit.
+- White screen / no image, menu buttons do nothing: possibly a faulty board (one report in issue #26, fixed by a replacement unit). Return or exchange.
+- Backlight turns off after a while: put the Mirror back into factory-reset/setup mode (upstream README).
