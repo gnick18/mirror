@@ -11,6 +11,12 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 - [x] SanDisk 64GB Ultra microSD, SDSQUJQ-064G-GZ6MA ($24.99). Ordered Nov 7, arriving Nov 8. The MacBook's SD slot can flash it using the card's microSD-to-SD adapter.
 - [x] UGREEN micro HDMI to HDMI cable, 3 ft ($6.99). Ordered Nov 7, arriving Nov 8. Pi 4 has micro HDMI ports; the controller board has a full-size HDMI input.
 
+## Presence sensor
+- [x] LD2410C 24GHz mmWave human presence sensor (EC Buying, Amazon, $11.99). Ordered Nov 7, arriving Nov 8. Pins come pre-soldered: TX, RX, OUT, GND, VCC.
+- [x] 40 female-to-female Dupont jumper wires, 20 cm (California JOS, Amazon, $4.29). Ordered Nov 7, arriving Nov 8. Took 20 cm because 30 cm wouldn't arrive until Monday. Fine for bench testing. If the sensor ends up far from the Pi once mounted, get longer wires (EDGELEC sells 50 cm and 100 cm).
+- Wiring plan: VCC to Pi 5V (pin 2), GND to Pi ground (pin 6), OUT to GPIO17 (pin 11). OUT is 3.3V logic, so it is safe for the Pi.
+- [ ] Check on build day: does the radar see through the mirror glass? Two-way mirror coatings can be metallic. If it doesn't, mount it on the top edge of the frame or behind the old camera window.
+
 ## Display controller (keeping it, decided Nov 1)
 - [x] e-qstore-2020 "HD-MI+DP+VGA LCD Controller Driver Board Monitor Kit for DV430FHM-NN0/NN1/NN5" (eBay, $35.16, option "DP+HDM+VGA board Kit"). Received by Nov 7 (shipped from Hong Kong).
   - Kit contents per listing: controller board, 5-key keypad, LVDS cable, backlight cable.

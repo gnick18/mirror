@@ -25,8 +25,10 @@ ol { list-style: none; }
   width: 1080px;
   height: 1920px;
   transform-origin: 0 0;
-  transition: opacity 4s ease;
+  transition: opacity 3s ease; /* duration set per fade in app.js */
 }
+#clock, #weather, #agenda { transition: opacity 1s ease; }
+.hidden { opacity: 0; } /* widgets switched off from the remote */
 
 /* Clock, top left */
 #clock { position: absolute; top: 72px; left: var(--gutter); }

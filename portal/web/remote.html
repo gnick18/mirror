@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mirror">
+  <meta name="theme-color" content="#000000">
+  <title>Mirror remote</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #000;
+      --card: #161616;
+      --line: #2a2a2a;
+      --fg: #f2f2f2;
+      --dim: #9a9a9a;
+      --on: #30d158;
+      --link: #0a84ff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font: 17px/1.4 -apple-system, system-ui, sans-serif;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: max(24px, env(safe-area-inset-top)) 16px 40px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    header { margin: 8px 4px 22px; }
+    h1 { font-size: 34px; font-weight: 700; }
+    #status { color: var(--dim); margin-top: 2px; }
+    #status .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; background: var(--dim); }
+    #status.showing .dot { background: var(--on); }
+    section { background: var(--card); border-radius: 14px; padding: 0 16px; margin-bottom: 20px; }
+    h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); padding: 14px 0 8px; }
+    .segmented { display: flex; background: #000; border-radius: 10px; padding: 3px; }
+    .segmented button { flex: 1; border: 0; border-radius: 8px; background: none; color: var(--dim); font: inherit; font-size: 15px; padding: 10px 4px; }
+    .segmented button[aria-pressed="true"] { background: #2e2e30; color: var(--fg); font-weight: 600; }
+    .hint { color: var(--dim); font-size: 14px; padding: 10px 0 14px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; border-top: 1px solid var(--line); }
+    h2 + .row { border-top: 0; }
+    .row small { display: block; color: var(--dim); font-size: 13px; }
+    input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      position: relative;
+      flex-shrink: 0;
+      width: 51px;
+      height: 31px;
+      border-radius: 16px;
+      background: #3a3a3c;
+      transition: background 0.2s;
+    }
+    input[type="checkbox"]::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+    input[type="checkbox"]:checked { background: var(--on); }
+    input[type="checkbox"]:checked::after { transform: translateX(20px); }
+    input[type="checkbox"]:disabled { opacity: 0.4; }
+    button.plain { width: 100%; min-height: 54px; border: 0; border-top: 1px solid var(--line); background: none; color: var(--link); font: inherit; text-align: left; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mirror</h1>
+    <p id="status"><span class="dot"></span><span id="status-text">Connecting…</span></p>
+  </header>
+
+  <section>
+    <h2>Display</h2>
+    <div class="segmented" role="group" aria-label="Display mode">
+      <button data-mode="auto">Auto</button>
+      <button data-mode="on">Always on</button>
+      <button data-mode="off">Mirror only</button>
+    </div>
+    <p class="hint" id="mode-hint"></p>
+  </section>
+
+  <section>
+    <h2>Widgets</h2>
+    <label class="row"><span>Clock</span><input type="checkbox" data-widget="clock"></label>
+    <label class="row"><span>Weather</span><input type="checkbox" data-widget="weather"></label>
+    <label class="row"><span>Calendar</span><input type="checkbox" data-widget="agenda"></label>
+  </section>
+
+  <section>
+    <h2>Testing</h2>
+    <label class="row"><span>Pretend someone's here<small id="sensor-note"></small></span><input type="checkbox" id="simulate"></label>
+    <button class="plain" id="reload">Reload the mirror</button>
+  </section>
+
+  <script src="remote.js"></script>
+</body>
+</html>

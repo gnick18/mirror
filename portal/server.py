@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Mirror portal server.
 
-Serves the web UI in web/ and a small JSON API:
+Serves the web UI in web/ (the mirror at /, the phone remote at /remote) and a small JSON API:
   /api/config    display settings from config.json (calendar URLs left out)
   /api/calendar  upcoming events from the ICS feeds listed in config.json
-  /api/version   changes when web/ or config.json changes, so the page reloads itself
+  /api/state     GET: what the mirror should show (presence, remote settings, file version)
+                 POST: change remote settings, e.g. {"mode": "off"} or {"hidden": ["weather"]}
 
 Run: python3 server.py [--host 127.0.0.1] [--port 8080]
 """
@@ -23,10 +24,91 @@ ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 CONFIG = ROOT / "config.json"
 EXAMPLE_CONFIG = ROOT / "config.example.json"
+STATE_FILE = ROOT / "state.json"
 ICS_CACHE_SECONDS = 15 * 60
+WIDGETS = ("clock", "weather", "agenda")
+MODES = ("auto", "on", "off")  # auto = follow the presence sensor, off = plain mirror
 
 _ics_cache = {}  # url -> (fetched_at, bytes)
 _ics_lock = threading.Lock()
+
+# Remote settings. mode and hidden survive restarts (state.json). simulate is the
+# remote's "pretend someone's here" switch, used while no sensor is connected.
+_state = {"mode": "auto", "hidden": [], "simulate": True, "reload": 0}
+_state_lock = threading.Lock()
+SAVED_KEYS = ("mode", "hidden")
+
+
+class Presence:
+    """Someone in front of the mirror, read from the LD2410C's OUT pin (high = person)."""
+
+    def __init__(self, gpio=None, hold_seconds=30):
+        self.hold = hold_seconds
+        self.last_seen = 0.0
+        self.device = None
+        self.detail = "not configured"
+        if gpio is None:
+            return
+        try:
+            from gpiozero import DigitalInputDevice
+
+            self.device = DigitalInputDevice(gpio, pull_up=False)
+            self.detail = f"GPIO{gpio}"
+        except Exception as e:  # not on a Pi, or gpiozero missing
+            self.detail = f"unavailable ({e})"
+            print(f"presence sensor {self.detail}, using the remote's test switch", file=sys.stderr)
+
+    @property
+    def connected(self):
+        return self.device is not None
+
+    def detected(self, simulate):
+        if not self.connected:
+            return simulate
+        # Sampled on each request. The mirror polls every second and the sensor holds
+        # OUT high for a few seconds itself, so nothing is missed.
+        if self.device.value:
+            self.last_seen = time.time()
+        return time.time() - self.last_seen < self.hold
+
+
+presence = Presence()
+
+
+def load_state():
+    try:
+        saved = json.loads(STATE_FILE.read_text())
+        _state.update({k: saved[k] for k in SAVED_KEYS if k in saved})
+    except (FileNotFoundError, ValueError):
+        pass
+
+
+def update_state(patch):
+    with _state_lock:
+        if patch.get("mode") in MODES:
+            _state["mode"] = patch["mode"]
+        if isinstance(patch.get("hidden"), list):
+            _state["hidden"] = [w for w in WIDGETS if w in patch["hidden"]]
+        if isinstance(patch.get("simulate"), bool):
+            _state["simulate"] = patch["simulate"]
+        if patch.get("reload"):
+            _state["reload"] += 1
+        STATE_FILE.write_text(json.dumps({k: _state[k] for k in SAVED_KEYS}))
+    return current_state()
+
+
+def current_state():
+    with _state_lock:
+        s = dict(_state)
+    someone = presence.detected(s["simulate"])
+    show = {"on": True, "off": False}.get(s["mode"], someone)
+    return {
+        **s,
+        "someone": someone,
+        "show": show,
+        "sensor": {"connected": presence.connected, "detail": presence.detail},
+        "version": version(),  # the mirror reloads itself when this changes
+    }
 
 
 def config_path():
@@ -156,13 +238,27 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json(public_config(read_config()))
             if path == "/api/calendar":
                 return self.send_json(upcoming_events(read_config()))
-            if path == "/api/version":
-                return self.send_json({"version": version()})
+            if path == "/api/state":
+                return self.send_json(current_state())
         except ModuleNotFoundError as e:
             return self.send_json({"error": f"{e}. Run: pip install -r requirements.txt"}, 500)
         except Exception as e:
             return self.send_json({"error": str(e)}, 500)
+        if path == "/remote":
+            self.path = "/remote.html"
         return super().do_GET()
+
+    def do_POST(self):
+        if self.path.split("?", 1)[0] != "/api/state":
+            return self.send_error(404)
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            patch = json.loads(self.rfile.read(length) or b"{}")
+        except ValueError:
+            return self.send_json({"error": "body must be JSON"}, 400)
+        if not isinstance(patch, dict):
+            return self.send_json({"error": "body must be a JSON object"}, 400)
+        return self.send_json(update_state(patch))
 
     def send_json(self, obj, status=200):
         body = json.dumps(obj).encode()
@@ -188,6 +284,10 @@ def main():
     ap.add_argument("--host", default="127.0.0.1", help="use 0.0.0.0 to view from another computer")
     ap.add_argument("--port", type=int, default=8080)
     args = ap.parse_args()
+    global presence
+    p = read_config().get("presence", {})
+    presence = Presence(p.get("gpio"), p.get("holdSeconds", 30))
+    load_state()
     print(f"Mirror portal on http://{args.host}:{args.port} using {config_path().name}")
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 

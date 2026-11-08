@@ -6,6 +6,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let cfg = {};
 let agenda = { events: [] };
+let state = { show: true, hidden: [] }; // from /api/state: presence + remote settings
 
 // ---------- layout ----------
 
@@ -33,20 +34,30 @@ function tickClock() {
   $("ampm").textContent = cfg.clock24 ? "" : now.getHours() < 12 ? "AM" : "PM";
   $("sec").textContent = cfg.showSeconds ? String(now.getSeconds()).padStart(2, "0") : "";
   $("date").textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-  applyDim(now);
+  updateOpacity(now);
   setTimeout(tickClock, 1000 - now.getMilliseconds());
 }
 
-// Night mode: fade everything down between dim.from and dim.to.
-function applyDim(now) {
+// Night mode: between dim.from and dim.to everything is shown dimmer.
+function isNight(now) {
   const d = cfg.dim;
-  if (!d) return;
+  if (!d) return false;
   const toMin = (s) => s.split(":").reduce((h, m) => Number(h) * 60 + Number(m));
   const mins = now.getHours() * 60 + now.getMinutes();
   const from = toMin(d.from);
   const to = toMin(d.to);
-  const night = from > to ? mins >= from || mins < to : mins >= from && mins < to;
-  $("stage").style.opacity = night ? d.brightness : 1;
+  return from > to ? mins >= from || mins < to : mins >= from && mins < to;
+}
+
+// Black is plain mirror, so "hidden" just means fading the whole stage to 0.
+function updateOpacity(now = new Date()) {
+  const stage = $("stage");
+  const target = !state.show ? 0 : isNight(now) ? cfg.dim.brightness : 1;
+  const current = stage.style.opacity === "" ? 1 : Number(stage.style.opacity);
+  if (current === target) return;
+  // Quick fade in when someone walks up, slow fade out when they leave.
+  stage.style.transitionDuration = target > current ? "0.8s" : "3s";
+  stage.style.opacity = target;
 }
 
 // ---------- weather ----------
@@ -216,19 +227,24 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 
-// ---------- auto reload when files change (after a git pull on the Pi) ----------
+// ---------- presence, remote settings, and auto reload ----------
 
-async function watchVersion() {
+// Polls the server every second. Reloads the page when files change (after a
+// git pull on the Pi) or when the remote's "Reload the mirror" button is tapped.
+async function watchState() {
   let first = null;
   for (;;) {
     try {
-      const { version } = await (await fetch("/api/version")).json();
-      if (first === null) first = version;
-      else if (version !== first) return location.reload();
+      state = await (await fetch("/api/state")).json();
+      const token = `${state.version}:${state.reload}`;
+      if (first === null) first = token;
+      else if (token !== first) return location.reload();
+      for (const id of ["clock", "weather", "agenda"]) $(id).classList.toggle("hidden", state.hidden.includes(id));
+      updateOpacity();
     } catch {
       // server restarting, keep polling
     }
-    await sleep(30e3);
+    await sleep(1000);
   }
 }
 
@@ -251,7 +267,7 @@ async function start() {
   updateAgenda();
   setInterval(updateAgenda, 10 * 60e3);
   setInterval(renderAgenda, 60e3);
-  watchVersion();
+  watchState();
 }
 
 start();

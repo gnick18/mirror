@@ -6,5 +6,6 @@
   "calendarDays": 7,
   "maxEvents": 9,
   "dim": { "from": "22:30", "to": "06:00", "brightness": 0.35 },
+  "presence": { "gpio": 17, "holdSeconds": 30 },
   "calendars": []
 }

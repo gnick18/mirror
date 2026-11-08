@@ -1,7 +1,9 @@
 # Build notes
 
 ## Plan
-- Raspberry Pi 4 runs a custom portal (web app, Chromium kiosk fullscreen) over HDMI to the controller board. Starting widgets: clock, weather, calendar. Code lives in `portal/` (to be created).
+- Raspberry Pi 4 runs a custom portal (web app, Chromium kiosk fullscreen) over HDMI to the controller board. Starting widgets: clock, weather, calendar. Code lives in `portal/`.
+- Added Nov 7: an LD2410C presence sensor on the Pi's GPIO. Widgets fade in when someone is in front of the mirror and fade to black (pure mirror) when no one is. The backlight stays on either way, because the Mirror board controls it.
+- Added Nov 7: a phone remote page served by the portal (e.g. `mirror.local:8080/remote`) for switching screens and widgets. Spotify through Spotify Connect (raspotify) if there is Premium, plus a now-playing card.
 
 ## Log
 - Confirmed the Mirror has a BOE panel (DV430FHM-NN5).
