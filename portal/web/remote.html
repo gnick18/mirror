@@ -69,6 +69,17 @@
     input[type="checkbox"]:checked::after { transform: translateX(20px); }
     input[type="checkbox"]:disabled { opacity: 0.4; }
     button.plain { width: 100%; min-height: 54px; border: 0; border-top: 1px solid var(--line); background: none; color: var(--link); font: inherit; text-align: left; }
+    [hidden] { display: none !important; }
+    .track { display: flex; align-items: center; gap: 14px; padding: 2px 0 12px; }
+    #m-art { width: 64px; height: 64px; border-radius: 6px; object-fit: cover; background: #2a2a2a; flex-shrink: 0; }
+    .track-text { min-width: 0; }
+    #m-title, #m-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #m-sub { color: var(--dim); font-size: 14px; }
+    .controls { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 16px; }
+    .controls button { display: grid; place-items: center; width: 54px; height: 54px; border: 0; border-radius: 50%; background: #2e2e30; color: var(--fg); }
+    .controls button svg { width: 24px; height: 24px; fill: currentColor; }
+    .controls #m-toggle { width: 64px; height: 64px; background: var(--fg); color: #000; }
+    #m-hint:empty { display: none; }
   </style>
 </head>
 <body>
@@ -76,6 +87,21 @@
     <h1>Mirror</h1>
     <p id="status"><span class="dot"></span><span id="status-text">Connecting…</span></p>
   </header>
+
+  <section>
+    <h2>Music</h2>
+    <div class="track">
+      <img id="m-art" alt="">
+      <div class="track-text"><div id="m-title">Connecting…</div><div id="m-sub"></div></div>
+    </div>
+    <div class="controls" id="m-controls">
+      <button data-action="previous" aria-label="Previous track"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button data-action="play" id="m-toggle" aria-label="Play"><svg viewBox="0 0 24 24"><path id="m-toggle-icon" d="M7 4v16l13-8z"/></svg></button>
+      <button data-action="next" aria-label="Next track"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+    </div>
+    <button class="plain" data-action="mirror" id="m-mirror">Play on the mirror's speakers</button>
+    <p class="hint" id="m-hint"></p>
+  </section>
 
   <section>
     <h2>Display</h2>
@@ -91,6 +117,8 @@
     <h2>Widgets</h2>
     <label class="row"><span>Clock</span><input type="checkbox" data-widget="clock"></label>
     <label class="row"><span>Weather</span><input type="checkbox" data-widget="weather"></label>
+    <label class="row"><span>Bus times</span><input type="checkbox" data-widget="bus"></label>
+    <label class="row"><span>Now playing</span><input type="checkbox" data-widget="music"></label>
     <label class="row"><span>Calendar</span><input type="checkbox" data-widget="agenda"></label>
   </section>
 

@@ -4,6 +4,7 @@
 - Raspberry Pi 4 runs a custom portal (web app, Chromium kiosk fullscreen) over HDMI to the controller board. Starting widgets: clock, weather, calendar. Code lives in `portal/`.
 - Added Nov 7: an LD2410C presence sensor on the Pi's GPIO. Widgets fade in when someone is in front of the mirror and fade to black (pure mirror) when no one is. The backlight stays on either way, because the Mirror board controls it.
 - Added Nov 7: a phone remote page served by the portal (e.g. `mirror.local:8080/remote`) for switching screens and widgets. Spotify through Spotify Connect (raspotify) if there is Premium, plus a now-playing card.
+- Added Nov 7: bus times for the commute (Metro Transit timetable plus live feed), a Spotify now-playing card with controls on the remote (we have Premium), and the calendar cut down to today's events only.
 
 ## Log
 - Confirmed the Mirror has a BOE panel (DV430FHM-NN5).
@@ -65,6 +66,8 @@
 - [ ] Put the Mirror in factory-reset mode, move the panel LVDS cable to the new controller, power it from 12V, connect the Pi over HDMI, test.
 - [ ] Flash the Pi, set up kiosk mode.
 - [ ] Build the portal. First version started Nov 7 in `portal/`.
+- [ ] Spotify: create the developer app, put its Client ID in `portal/config.json`, run `spotify.py login` (steps in `portal/README.md`).
+- [ ] Mirror speakers: install raspotify on the Pi with the speaker name "Mirror", and work out the audio path. Check whether the controller board has an audio out or speaker header, otherwise use the Pi's headphone jack.
 
 ## Panel facts from the datasheet (datasheets/DV430FHM-NN0-BOE.pdf, same panel family as our NN5)
 - Panel input CN1 is a 51-pin LVDS connector, 2 channels, 8-bit (Table 5).

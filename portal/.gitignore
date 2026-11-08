@@ -3,3 +3,6 @@ config.json
 .venv/
 __pycache__/
 state.json
+# Downloaded bus timetable and the Spotify login
+gtfs/
+spotify_token.json

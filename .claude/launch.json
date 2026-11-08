@@ -3,8 +3,12 @@
   "configurations": [
     {
       "name": "portal",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["portal/server.py", "--port", "8080"],
+      "runtimeExecutable": "portal/.venv/bin/python3",
+      "runtimeArgs": [
+        "portal/server.py",
+        "--port",
+        "8080"
+      ],
       "port": 8080
     }
   ]

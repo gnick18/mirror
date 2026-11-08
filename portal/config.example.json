@@ -3,9 +3,15 @@
   "units": "imperial",
   "clock24": false,
   "showSeconds": true,
-  "calendarDays": 7,
-  "maxEvents": 9,
+  "maxEvents": 6,
   "dim": { "from": "22:30", "to": "06:00", "brightness": 0.35 },
   "presence": { "gpio": 17, "holdSeconds": 30 },
+  "bus": {
+    "title": "To the Capitol",
+    "from": [{ "stop": "10038", "walk": 5 }],
+    "to": [{ "stop": "10082", "walk": 2 }],
+    "count": 4
+  },
+  "spotify": { "clientId": "", "device": "Mirror" },
   "calendars": []
 }

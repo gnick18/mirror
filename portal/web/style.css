@@ -54,6 +54,39 @@ ol { list-style: none; }
 .icon { color: var(--fg); }
 .icon svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
+.empty { display: none; } /* nothing to show right now */
+
+/* Bus times, left column under the clock */
+#bus { position: absolute; top: 400px; left: var(--gutter); width: 620px; }
+#bus .day-label { margin-top: 0; }
+.bus { display: grid; grid-template-columns: 104px 1fr; align-items: center; padding: 10px 0; }
+.bus .route {
+  grid-row: span 2;
+  justify-self: start;
+  min-width: 76px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 34px;
+  font-weight: 500;
+  text-align: center;
+}
+.bus .leave { font-size: 38px; line-height: 1.25; }
+.bus .info { font-size: 26px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bus .then { margin-left: 16px; font-size: 28px; color: var(--faint); }
+.bus .live { width: 26px; height: 26px; margin-left: 8px; vertical-align: 6px; fill: none; stroke: var(--dim); stroke-width: 2; stroke-linecap: round; }
+.bus.sched .leave { color: var(--dim); } /* timetable only, no bus tracked yet */
+#bus-note { margin-top: 12px; font-size: 22px; color: var(--faint); }
+
+/* Spotify now playing, right column, low enough to clear four rows of buses */
+#music { position: absolute; top: 900px; right: var(--gutter); width: 420px; display: flex; flex-direction: row-reverse; align-items: center; gap: 24px; text-align: right; }
+#m-art { width: 112px; height: 112px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+#m-art[src=""] { display: none; }
+.m-text { flex: 1; min-width: 0; }
+#m-title { font-size: 34px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#m-artist { margin-top: 2px; font-size: 28px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-bar { margin-top: 14px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
+#m-progress { display: block; width: 0; height: 100%; background: var(--fg); }
+
 /* Agenda, lower third (keeps the middle clear for your reflection) */
 #agenda { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 110px; }
 .day-label {

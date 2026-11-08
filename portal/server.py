@@ -6,6 +6,8 @@ Serves the web UI in web/ (the mirror at /, the phone remote at /remote) and a s
   /api/calendar  upcoming events from the ICS feeds listed in config.json
   /api/state     GET: what the mirror should show (presence, remote settings, file version)
                  POST: change remote settings, e.g. {"mode": "off"} or {"hidden": ["weather"]}
+  /api/bus       the next buses from your stops to your destination (bus.py)
+  /api/spotify   GET: what's playing. POST: {"action": "play" | "pause" | "next" | "previous" | "mirror"}
 
 Run: python3 server.py [--host 127.0.0.1] [--port 8080]
 """
@@ -20,13 +22,16 @@ from datetime import date, datetime, timedelta
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from bus import Commute
+from spotify import Spotify, SpotifyError
+
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 CONFIG = ROOT / "config.json"
 EXAMPLE_CONFIG = ROOT / "config.example.json"
 STATE_FILE = ROOT / "state.json"
 ICS_CACHE_SECONDS = 15 * 60
-WIDGETS = ("clock", "weather", "agenda")
+WIDGETS = ("clock", "weather", "bus", "music", "agenda")
 MODES = ("auto", "on", "off")  # auto = follow the presence sensor, off = plain mirror
 
 _ics_cache = {}  # url -> (fetched_at, bytes)
@@ -73,6 +78,8 @@ class Presence:
 
 
 presence = Presence()
+commute = Commute()
+spotify = Spotify()
 
 
 def load_state():
@@ -121,8 +128,9 @@ def read_config():
 
 
 def public_config(cfg):
-    # Calendar URLs are secret links, so they never leave the server.
-    return {k: v for k, v in cfg.items() if k != "calendars"}
+    # Calendar URLs are secret links, so they never leave the server. The bus and
+    # Spotify settings are only used by the server.
+    return {k: v for k, v in cfg.items() if k not in ("calendars", "bus", "spotify")}
 
 
 def version():
@@ -185,7 +193,7 @@ def upcoming_events(cfg):
 
     tz = datetime.now().astimezone().tzinfo
     start = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
-    end = start + timedelta(days=cfg.get("calendarDays", 7))
+    end = start + timedelta(days=1)  # the mirror only shows today
     events, errors = [], []
     for cal in calendars:
         try:
@@ -212,14 +220,12 @@ def demo_events():
         return d.isoformat(), (d + timedelta(days=1)).isoformat()
 
     rows = [
+        ("Recycling pickup", *all_day(0), True),
         ("Coffee with a friend", *at(0, 9, 30), False),
         ("Lab meeting", *at(0, 13, 0), False),
+        ("Seminar", *at(0, 16, 0), False),
         ("Climbing gym", *at(0, 18, 30, 2), False),
-        ("Recycling pickup", *all_day(1), True),
-        ("Dentist", *at(1, 10, 0), False),
-        ("Seminar", *at(2, 16, 0), False),
-        ("Dinner reservation", *at(3, 19, 30, 2), False),
-        ("Farmers market", *at(5, 9, 0, 3), False),
+        ("Dinner", *at(0, 22, 0, 1.5), False),
     ]
     return [
         {"title": t, "start": s, "end": e, "allDay": a, "calendar": "Sample", "color": ""}
@@ -240,6 +246,10 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json(upcoming_events(read_config()))
             if path == "/api/state":
                 return self.send_json(current_state())
+            if path == "/api/bus":
+                return self.send_json(commute.upcoming(read_config().get("bus")))
+            if path == "/api/spotify":
+                return self.send_json(spotify.status(read_config().get("spotify")))
         except ModuleNotFoundError as e:
             return self.send_json({"error": f"{e}. Run: pip install -r requirements.txt"}, 500)
         except Exception as e:
@@ -249,16 +259,25 @@ class Handler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
-        if self.path.split("?", 1)[0] != "/api/state":
+        path = self.path.split("?", 1)[0]
+        if path not in ("/api/state", "/api/spotify"):
             return self.send_error(404)
         try:
             length = int(self.headers.get("Content-Length", 0))
-            patch = json.loads(self.rfile.read(length) or b"{}")
+            body = json.loads(self.rfile.read(length) or b"{}")
         except ValueError:
             return self.send_json({"error": "body must be JSON"}, 400)
-        if not isinstance(patch, dict):
+        if not isinstance(body, dict):
             return self.send_json({"error": "body must be a JSON object"}, 400)
-        return self.send_json(update_state(patch))
+        if path == "/api/state":
+            return self.send_json(update_state(body))
+        try:
+            spotify.control(read_config().get("spotify") or {}, body.get("action"))
+            return self.send_json({"ok": True})
+        except SpotifyError as e:
+            return self.send_json({"error": str(e)}, 400)
+        except Exception as e:
+            return self.send_json({"error": str(e)}, 500)
 
     def send_json(self, obj, status=200):
         body = json.dumps(obj).encode()
@@ -285,9 +304,12 @@ def main():
     ap.add_argument("--port", type=int, default=8080)
     args = ap.parse_args()
     global presence
-    p = read_config().get("presence", {})
+    cfg = read_config()
+    p = cfg.get("presence", {})
     presence = Presence(p.get("gpio"), p.get("holdSeconds", 30))
     load_state()
+    if cfg.get("bus"):
+        commute.ensure(cfg["bus"])  # load the timetable now rather than on the first request
     print(f"Mirror portal on http://{args.host}:{args.port} using {config_path().name}")
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 

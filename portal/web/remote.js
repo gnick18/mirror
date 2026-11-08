@@ -52,6 +52,57 @@ document.querySelectorAll("[data-widget]").forEach((c) =>
 $("simulate").addEventListener("change", (e) => send({ simulate: e.target.checked }));
 $("reload").addEventListener("click", () => send({ reload: true }));
 
+// ---------- music ----------
+
+const PLAY = "M7 4v16l13-8z";
+const PAUSE = "M6 4h4v16H6zM14 4h4v16h-4z";
+let music = null;
+
+function renderMusic() {
+  const connected = Boolean(music && music.connected);
+  const p = connected ? music.playing : null;
+  $("m-controls").hidden = !connected;
+  $("m-mirror").hidden = !connected;
+  $("m-art").hidden = !(p && p.art);
+  if (p && p.art && $("m-art").getAttribute("src") !== p.art) $("m-art").src = p.art;
+  if (!connected) {
+    $("m-title").textContent = music ? "Spotify isn't connected" : "Can't reach the mirror";
+    $("m-sub").textContent = music ? music.detail : "";
+    return;
+  }
+  $("m-title").textContent = p ? p.title : "Nothing playing";
+  $("m-sub").textContent = p ? [p.artist, p.device && `on ${p.device}`].filter(Boolean).join(" · ") : music.detail || "Start Spotify on any speaker";
+  const playing = Boolean(p && p.isPlaying);
+  $("m-toggle").dataset.action = playing ? "pause" : "play";
+  $("m-toggle").setAttribute("aria-label", playing ? "Pause" : "Play");
+  $("m-toggle-icon").setAttribute("d", playing ? PAUSE : PLAY);
+}
+
+async function loadMusic() {
+  try {
+    music = await (await fetch("/api/spotify")).json();
+  } catch {
+    music = null;
+  }
+  renderMusic();
+}
+
+document.querySelectorAll("[data-action]").forEach((b) =>
+  b.addEventListener("click", async () => {
+    try {
+      const r = await fetch("/api/spotify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: b.dataset.action }),
+      });
+      $("m-hint").textContent = (await r.json()).error || "";
+    } catch {
+      $("m-hint").textContent = "Can't reach the mirror";
+    }
+    setTimeout(loadMusic, 600); // Spotify takes a moment to report the change
+  })
+);
+
 // Keep in sync with the sensor and with other phones.
 async function poll() {
   try {
@@ -64,3 +115,5 @@ async function poll() {
 }
 
 poll();
+loadMusic();
+setInterval(loadMusic, 3000);

@@ -1,12 +1,15 @@
-// Mirror portal: clock, weather (Open-Meteo, no API key) and calendar agenda.
+// Mirror portal: clock, weather (Open-Meteo, no API key), bus times, Spotify and calendar agenda.
 const STAGE_W = 1080;
 const STAGE_H = 1920;
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const WIDGETS = ["clock", "weather", "bus", "music", "agenda"];
 
 let cfg = {};
 let agenda = { events: [] };
 let state = { show: true, hidden: [] }; // from /api/state: presence + remote settings
+let bus = { buses: [] };
+let music = null;
 
 // ---------- layout ----------
 
@@ -162,14 +165,6 @@ function startOfDay(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-function dayLabel(d, today) {
-  const diff = Math.round((startOfDay(d) - today) / 864e5);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  if (diff < 7) return d.toLocaleDateString(undefined, { weekday: "long" });
-  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-}
-
 async function updateAgenda() {
   try {
     const r = await fetch("/api/calendar");
@@ -183,27 +178,22 @@ async function updateAgenda() {
   renderAgenda();
 }
 
+// Only what's left of today. The whole section hides when there's nothing.
 function renderAgenda() {
   const now = new Date();
   const today = startOfDay(now);
+  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
   const events = (agenda.events || [])
     .map((e) => ({
       ...e,
       start: e.allDay ? localDate(e.start) : new Date(e.start),
       end: e.allDay ? localDate(e.end) : new Date(e.end),
     }))
-    .filter((e) => e.end > now)
-    .slice(0, cfg.maxEvents || 9);
+    .filter((e) => e.end > now && e.start < tomorrow)
+    .slice(0, cfg.maxEvents || 6);
 
-  const html = [];
-  let lastLabel = "";
+  const html = events.length ? ['<li class="day-label">Today</li>'] : [];
   events.forEach((e, i) => {
-    const shown = e.start < today ? today : e.start; // multi-day events that started earlier
-    const label = dayLabel(shown, today);
-    if (label !== lastLabel) {
-      html.push(`<li class="day-label">${label}</li>`);
-      lastLabel = label;
-    }
     const happening = e.start <= now && now < e.end;
     const when = e.allDay ? "All day" : happening ? "Now" : formatTime(e.start);
     const fade = Math.max(0.35, 1 - Math.max(0, i - 3) * 0.12); // later items fade out
@@ -214,17 +204,94 @@ function renderAgenda() {
       `<span class="title">${escapeHtml(e.title)}</span></li>`
     );
   });
-  if (!events.length) html.push('<li class="day-label">Nothing coming up</li>');
   $("events").innerHTML = html.join("");
 
   const notes = [];
-  if (agenda.demo) notes.push("Sample events. Add calendar links to config.json.");
+  if (agenda.demo && events.length) notes.push("Sample events. Add calendar links to config.json.");
   if (agenda.errors && agenda.errors.length) notes.push(`Calendar problem: ${agenda.errors.join("; ")}`);
   $("agenda-note").textContent = notes.join(" ");
+  $("agenda").classList.toggle("empty", !events.length && !notes.length);
 }
 
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
+// ---------- bus ----------
+
+// Bus and Spotify only poll while the widgets are showing, so nothing is fetched
+// while nobody is at the mirror.
+const visible = (id) => state.show && !state.hidden.includes(id);
+let busTimer, musicTimer;
+// Shown next to buses that are being tracked. The others are timetable times (and dimmer).
+const LIVE_ICON =
+  '<svg class="live" viewBox="0 0 24 24" aria-label="live"><path d="M7 17A7 7 0 0 1 7 7M17 7A7 7 0 0 1 17 17' +
+  'M10 14A3 3 0 0 1 10 10M14 10A3 3 0 0 1 14 14"/></svg>';
+
+async function updateBus() {
+  clearTimeout(busTimer);
+  if (visible("bus")) {
+    try {
+      bus = await (await fetch("/api/bus")).json();
+    } catch (e) {
+      console.warn("bus", e);
+    }
+    renderBus();
+  }
+  busTimer = setTimeout(updateBus, bus.loading ? 3000 : 30e3);
+}
+
+function renderBus() {
+  const now = Date.now();
+  const rows = (bus.buses || []).filter((b) => new Date(b.leave) - now > -60e3);
+  const html = rows.map((b) => {
+    const mins = Math.round((new Date(b.leave) - now) / 60e3);
+    const then = (b.then || []).map((t) => Math.max(0, Math.round((new Date(t) - now) / 60e3)));
+    const leave = (mins <= 0 ? "Leave now" : `Leave in ${mins} min`) + (b.live ? LIVE_ICON : "") +
+      (then.length ? `<span class="then">then ${then.join(", ")}</span>` : "");
+    const info = [b.stop, `arrive ${formatTime(new Date(b.arrive))}`];
+    return (
+      `<li class="bus${b.live ? "" : " sched"}">` +
+      `<span class="route" style="background:${b.color};color:${b.textColor}">${escapeHtml(b.route)}</span>` +
+      `<span class="leave">${leave}</span><span class="info">${escapeHtml(info.join("  ·  "))}</span></li>`
+    );
+  });
+  $("bus-title").textContent = bus.title || "";
+  $("buses").innerHTML = html.join("");
+  let note = bus.note || "";
+  if (bus.loading) note = "Loading the bus timetable…";
+  else if (bus.error) note = `Bus times unavailable: ${bus.error}`;
+  else if (!rows.length) note = "";
+  $("bus-note").textContent = note;
+  // Hidden when not set up, outside the configured hours, or with no buses soon.
+  $("bus").classList.toggle("empty", !bus.configured || (!rows.length && !bus.loading && !bus.error));
+}
+
+// ---------- music ----------
+
+async function updateMusic() {
+  clearTimeout(musicTimer);
+  if (visible("music")) {
+    try {
+      music = { ...(await (await fetch("/api/spotify")).json()), at: Date.now() };
+    } catch (e) {
+      console.warn("spotify", e);
+    }
+    renderMusic();
+  }
+  musicTimer = setTimeout(updateMusic, music && music.connected ? 5000 : 60e3);
+}
+
+function renderMusic() {
+  const p = music && music.playing;
+  $("music").classList.toggle("empty", !p || !p.isPlaying);
+  if (!p) return;
+  if ($("m-art").getAttribute("src") !== p.art) $("m-art").setAttribute("src", p.art || "");
+  $("m-title").textContent = p.title;
+  $("m-artist").textContent = p.artist;
+  // Spotify reports progress when polled. Move the bar along between polls.
+  const progress = p.progress + (p.isPlaying ? Date.now() - music.at : 0);
+  $("m-progress").style.width = p.duration ? `${Math.min(100, (progress / p.duration) * 100)}%` : "0";
 }
 
 // ---------- presence, remote settings, and auto reload ----------
@@ -235,12 +302,16 @@ async function watchState() {
   let first = null;
   for (;;) {
     try {
+      const was = { bus: visible("bus"), music: visible("music") };
       state = await (await fetch("/api/state")).json();
       const token = `${state.version}:${state.reload}`;
       if (first === null) first = token;
       else if (token !== first) return location.reload();
-      for (const id of ["clock", "weather", "agenda"]) $(id).classList.toggle("hidden", state.hidden.includes(id));
+      for (const id of WIDGETS) $(id).classList.toggle("hidden", state.hidden.includes(id));
       updateOpacity();
+      // Someone just walked up: get fresh bus times and music right away.
+      if (visible("bus") && !was.bus) updateBus();
+      if (visible("music") && !was.music) updateMusic();
     } catch {
       // server restarting, keep polling
     }
@@ -265,8 +336,12 @@ async function start() {
   tickClock();
   updateWeather();
   updateAgenda();
+  updateBus();
+  updateMusic();
   setInterval(updateAgenda, 10 * 60e3);
   setInterval(renderAgenda, 60e3);
+  setInterval(renderBus, 15e3);
+  setInterval(renderMusic, 1000);
   watchState();
 }
 
