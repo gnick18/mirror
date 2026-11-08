@@ -77,6 +77,8 @@ The remote (`/remote`, add it to your phone's home screen) has three display mod
 
 It can also control Spotify, switch single widgets off and reload the mirror page. Mode and widget choices are saved in `state.json` (git-ignored) and survive restarts. Anyone on the same Wi-Fi can open the remote.
 
+There is also a native iPhone app, McQueen Mirror, in `ios/`. It has the same controls plus home-screen and Lock Screen widgets and a Control Center toggle. See `ios/README.md`.
+
 Until the sensor is wired, or when running on the Mac, the "Pretend someone's here" switch stands in for it. The sensor is an LD2410C: VCC to 5V (pin 2), GND to ground (pin 6), OUT to GPIO17 (pin 11). It is read using gpiozero, which comes with Raspberry Pi OS, so on the Pi create the virtual environment with `python3 -m venv --system-site-packages .venv` to keep access to it.
 
 ## Setting up the Pi
