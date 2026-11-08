@@ -87,4 +87,14 @@ Until the sensor is wired, or when running on the Mac, the "Pretend someone's he
    - Wi-Fi name and password, and your time zone
    - turn on SSH with public-key authentication, using the Mac's key (`~/.ssh/id_rsa.pub`)
 2. Boot the Pi on any TV first, to check the Pi and the micro HDMI cable before they go into the Mirror. Use HDMI0, the port next to USB-C power.
-3. Once `ssh <user>@mirror.local` works from the Mac, the rest (portrait rotation, Chromium kiosk, starting the server on boot, no screen blanking) can be done over SSH.
+3. Once `ssh <user>@mirror.local` works from the Mac, copy the portal over: `portal/deploy.sh <user>@mirror.local`. It copies `config.json` too, and `spotify_token.json` the first time only.
+4. On the Pi (`ssh <user>@mirror.local`), run `cd ~/mirror/portal && bash setup-pi.sh`, then `sudo reboot`. The script:
+   - installs Chromium and the Python packages
+   - starts the server on boot as the `mirror-portal` service, so the remote works at `mirror.local:8080/remote`
+   - boots to the desktop with screen blanking off
+   - opens the mirror page full screen, turned for the portrait panel (`kiosk.sh`)
+   - installs raspotify as a Spotify speaker named after `spotify.device` ("Mirror"). Use `--no-spotify` to skip it.
+5. If the picture comes out upside down, run `bash setup-pi.sh --rotate 270` and reboot.
+6. For the speakers, set `LIBRESPOT_DEVICE` in `/etc/raspotify/conf` once you know the audio path (list the choices with `librespot --device ?`), then run `sudo systemctl restart raspotify`.
+
+After a code or config change on the Mac, run `portal/deploy.sh <user>@mirror.local` again. It restarts the server, and the mirror page reloads itself. Server logs are in `journalctl -u mirror-portal`.
