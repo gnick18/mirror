@@ -20,7 +20,7 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 - Not proven: nobody in issue #26 reported this exact DP version (they used the HDMI+DVI+VGA version, e.g. eqmarket2011 eBay item 167410340053).
 
 ### Possibly needed later
-- [ ] 12V DC wall adapter, 3A or more, plug to match the board's DC jack (usually 5.5x2.1mm). Lets the first power-up test run without tapping the Mirror's 12V rail. Also the fix if the Mirror's 12V rail can't run the controller (flicker / screen won't stay on). The panel alone draws 0.5A typical, 0.95A max, with a 3A inrush for about 2 ms (datasheet Table 3).
+- [x] Waysse 12V 5A power supply, 5.5x2.1mm plug ($9.99, Amazon). Ordered Nov 7, arriving Nov 8. Check the label shows center-positive before plugging it in. Lets the first power-up test run without tapping the Mirror's 12V rail. Also the fix if the Mirror's 12V rail can't run the controller (flicker / screen won't stay on). The panel alone draws 0.5A typical, 0.95A max, with a 3A inrush for about 2 ms (datasheet Table 3).
 - [ ] Replacement LVDS cable, only if the kit's plug doesn't match the panel socket.
 
 ### Upstream's alternative route (not using)

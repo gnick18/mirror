@@ -58,7 +58,7 @@
 - [x] Open the Mirror: check T-con connector type, power board voltages. Done, see inspection and power board notes.
 - [x] Contact the seller about cable fit and backlight: no longer needed.
 - [x] Order the microSD card and micro HDMI cable. Ordered Nov 7, arriving Nov 8. Controller board and Pi kit are in hand.
-- [ ] Decide how the controller gets 12V for the first test (separate adapter, or the Mirror's 12V rail). See build day steps.
+- [x] Decide how the controller gets 12V for the first test. Decided Nov 7: separate 12V 5A adapter (Option A in the build day steps), arriving Nov 8. Moving to the Mirror's 12V rail can come later.
 - [ ] When the controller arrives: compare the kit's LVDS plug to the panel socket before unplugging anything.
 - [ ] Put the Mirror in factory-reset mode, move the panel LVDS cable to the new controller, power it from 12V, connect the Pi over HDMI, test.
 - [ ] Flash the Pi, set up kiosk mode.

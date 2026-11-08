@@ -28,7 +28,7 @@ Open http://localhost:8080. With no calendars in the config, it shows sample eve
 Getting a calendar's ICS link:
 - Google Calendar: Settings, pick the calendar, "Integrate calendar", copy "Secret address in iCal format".
 - Apple Calendar (iCloud): on the iPhone, open Calendar, tap Calendars, tap the (i) next to a calendar, turn on Public Calendar, then Share Link and Copy. On the Mac, Control-click the calendar in the sidebar, choose Share Calendar and tick Public Calendar. Each calendar has its own `webcal://` link, so add one entry per calendar. Only iCloud calendars can be published this way. A Google or Exchange calendar that shows up in Apple Calendar needs its own provider's link. Anyone with a public link can see that calendar's events, which is why `config.json` stays out of git.
-- Outlook: Settings, Calendar, Shared calendars, publish a calendar and copy the ICS link.
+- Outlook, including school or work Microsoft 365 accounts: sign in to Outlook on the web, open Settings (gear icon), Calendar, Shared calendars. Under "Publish a calendar", pick the calendar, choose "Can view titles and locations", click Publish and copy the ICS link (not the HTML one). If that section is missing or only offers "Can view when I'm busy", the school's IT has limited publishing for the account. Feeds with Windows time zone names like "Central Standard Time" parse correctly (tested Nov 7).
 
 Calendars need two Python packages. Install them in a virtual environment:
 
