@@ -126,7 +126,11 @@ class Spotify:
         try:
             with urllib.request.urlopen(req, timeout=10) as r:
                 raw = r.read()
-                return json.loads(raw) if raw else None  # 204 = nothing playing
+            # 204 = nothing playing. The player commands answer with a body that isn't JSON.
+            try:
+                return json.loads(raw) if raw.strip() else None
+            except ValueError:
+                return None
         except urllib.error.HTTPError as e:
             if e.code == 401 and retry:
                 with self.lock:
