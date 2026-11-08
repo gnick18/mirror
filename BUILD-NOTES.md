@@ -57,17 +57,36 @@
 ## Decision (Nov 1)
 - Keep the e-qstore DP+HDMI+VGA board. Panel match confirmed, LVDS socket is the standard wire-harness type, and 12V/24V rails exist. Remaining risks: DP version untested by others; confirm the LVDS plug's pin count matches when the kit arrives.
 
+## Controller board check (Nov 8)
+Answers from the board-check guide, checked against the photos below. Cleaned copies are in `photos/` with location data removed. The phone originals stay in `photos/incoming/`, which git ignores.
+- Board: printed ME.RT2525.EB818. Main chip Realtek RTD2525BR (other markings PBEV4P3, GP50).
+- Panel-voltage jumper (CN4, "Panel_VCC"): a 6-pin header with three pin pairs. The printed legend has three boxes in the same order as the pairs (12V/P_VCC, P_VCC/5V, 3V3/P_VCC), and the cap is on the 12V pair. Confirmed from the close-up photo.
+- LVDS plug: same width as the factory plug, but the gold contacts are not in exactly the same places. That is expected, because a cable only has contacts where it has wires, and 16 of the panel's 51 pins are not connected (datasheet Table 5: 1, 4 to 6, 8 to 10, 24 to 27, 40 to 43, 47).
+  - The top of each plug shows one of its two staggered contact rows, the odd pins. Lined up at the end with the red wires (the end by the "UJC" marking on the panel socket), both plugs have contacts on all ten odd video pins (13, 15, 17, 19, 23, 29, 31, 33, 35, 39) and on 12V pins 49 and 51.
+  - The differences are only on ground and unused pins. The kit adds 21 and 45 (ground) and 27 (not connected). The factory cable adds 11 (ground) and 7 (SELLVDS).
+  - So the kit cable is wired for this panel. Plug it in the same way up as the factory plug, red wires at the "UJC" end. The even row is hidden under the plug, so it was not checked directly.
+  - The kit leaves pin 7 open, so the panel expects VESA-format LVDS. If colors look wrong at first light, change the board's LVDS format (JEIDA/VESA) first.
+- Power input: a barrel jack marked "DC IN", with 12V printed on the back of the board. Plug fit and adapter polarity wait for the Waysse adapter.
+- Audio: the board has a headphone jack, a 4-pin speaker socket and an AUDIO IN jack. The speaker socket means the board has its own amplifier, so the plan is Pi HDMI to the controller, then its speaker socket to the Mirror's speakers. The Pi sends the sound over the HDMI cable it already uses. One kit listing for this board gives the speaker output as 8 ohm, 2 W on a 4-pin PH2.0 socket (a listing, not a datasheet). Still to check: whether the Mirror's speaker plug fits that socket (photo 13), and whether 2 W per side is loud enough. Fallback: a 12V amplifier board fed from the headphone jack.
+- Kit backlight cable: plugged into a header on the controller's top edge in the photo (red, black, yellow and white wires to a white 8-pin plug). It isn't used, because the Mirror's own board keeps running the backlight. Unplug it from the controller and set it aside so a loose end doesn't sit in the case.
+
+Photos (Nov 8):
+- [Controller, top side](photos/controller-top.jpg): the DC IN jack, DP, HDMI, VGA and two 3.5 mm jacks along one edge, the white SPEAKER socket on the bottom edge, and the LVDS cable in CN2 beside the main chip.
+- [Voltage jumper](photos/controller-voltage-jumper.jpg): CN4 with the cap on the 12V pair.
+- [LVDS plugs compared](photos/lvds-plugs-compared-1.jpg) and [a second angle](photos/lvds-plugs-compared-2.jpg): the factory plug in the panel socket on top, the kit plug held below it.
+- Still to take: the bottom side of the board, both ends of the kit's LVDS cable, the adapter's label once it arrives, and where the speaker wires plug into the Mirror's board.
+
 ## To do (updated Nov 1, replaces the list above)
 - [x] Open the Mirror: check T-con connector type, power board voltages. Done, see inspection and power board notes.
 - [x] Contact the seller about cable fit and backlight: no longer needed.
 - [x] Order the microSD card and micro HDMI cable. Ordered Nov 7, arriving Nov 8. Controller board and Pi kit are in hand.
 - [x] Decide how the controller gets 12V for the first test. Decided Nov 7: separate 12V 5A adapter (Option A in the build day steps), arriving Nov 8. Moving to the Mirror's 12V rail can come later.
-- [ ] When the controller arrives: compare the kit's LVDS plug to the panel socket before unplugging anything.
+- [x] When the controller arrives: compare the kit's LVDS plug to the panel socket before unplugging anything. Nov 8: same width, and the visible contacts match the panel's pinout (see the board check above).
 - [ ] Put the Mirror in factory-reset mode, move the panel LVDS cable to the new controller, power it from 12V, connect the Pi over HDMI, test.
 - [ ] Flash the Pi, set up kiosk mode.
 - [ ] Build the portal. First version started Nov 7 in `portal/`.
 - [ ] Spotify: create the developer app, put its Client ID in `portal/config.json`, run `spotify.py login` (steps in `portal/README.md`).
-- [ ] Mirror speakers: install raspotify on the Pi with the speaker name "Mirror", and work out the audio path. Check whether the controller board has an audio out or speaker header, otherwise use the Pi's headphone jack.
+- [ ] Mirror speakers: `setup-pi.sh` installs raspotify as "Mirror". Audio path decided Nov 8: the controller has a 4-pin speaker socket, so move the Mirror's speaker plugs to it and set raspotify's `LIBRESPOT_DEVICE` to the Pi's HDMI output.
 
 ## Panel facts from the datasheet (datasheets/DV430FHM-NN0-BOE.pdf, same panel family as our NN5)
 - Panel input CN1 is a 51-pin LVDS connector, 2 channels, 8-bit (Table 5).

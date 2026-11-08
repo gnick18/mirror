@@ -1,0 +1,2 @@
+# Original phone photos keep their location data. Only the cleaned copies in photos/ get committed.
+photos/incoming/

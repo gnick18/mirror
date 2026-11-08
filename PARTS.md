@@ -20,6 +20,7 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 ## Display controller (keeping it, decided Nov 1)
 - [x] e-qstore-2020 "HD-MI+DP+VGA LCD Controller Driver Board Monitor Kit for DV430FHM-NN0/NN1/NN5" (eBay, $35.16, option "DP+HDM+VGA board Kit"). Received by Nov 7 (shipped from Hong Kong).
   - Kit contents per listing: controller board, 5-key keypad, LVDS cable, backlight cable.
+  - Checked Nov 8: board printed ME.RT2525.EB818, main chip Realtek RTD2525BR. It has a "DC IN" 12V jack, a headphone jack, a 4-pin speaker socket and an AUDIO IN jack.
   - NOT included: inverter, power board, power adapter. Board takes DC 12V/4A.
   - Seller return policy: 5 days after receipt, buyer pays return shipping (eBay page says returns through Dec 17; check which applies if needed).
 - Why it's OK: panel model matches; the panel's LVDS input is a standard wire-harness socket (not FFC); the Mirror's power board already has 24V for the backlight and 12V for a controller.
@@ -38,8 +39,8 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 - [x] Seller's 24V warning: covered, the Mirror's own power board supplies 24V to the backlight driver.
 
 ## Check when the board arrives
-- [ ] Hold the kit's LVDS plug next to the panel socket: same width and latch shape, 51 pins? (Don't unplug the factory cable until it matches.)
-- [ ] Panel-voltage jumper on the controller (often marked 3.3V / 5V / 12V near the LVDS header) is on 12V. The panel takes 12V over the LVDS cable (datasheet pins 48 to 51).
+- [x] Hold the kit's LVDS plug next to the panel socket: same width and latch shape, 51 pins? (Don't unplug the factory cable until it matches.) Nov 8: same width, and the visible contacts match the panel's pinout. Details in BUILD-NOTES.md.
+- [x] Panel-voltage jumper on the controller (often marked 3.3V / 5V / 12V near the LVDS header) is on 12V. The panel takes 12V over the LVDS cable (datasheet pins 48 to 51). Nov 8: the cap is on the 12V pair, confirmed from the photo.
 - [ ] 12V rail current: does it handle the Mirror board + controller at once?
 
 ## Tools
