@@ -1,0 +1,71 @@
+/* Two-way mirror rules: black is invisible (pure mirror), only lit pixels show.
+   So no panels or fills, just thin white type on #000. */
+:root {
+  --fg: #fff;
+  --dim: rgba(255, 255, 255, 0.6);
+  --faint: rgba(255, 255, 255, 0.32);
+  --gutter: 64px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #000; overflow: hidden; cursor: none; }
+body {
+  color: var(--fg);
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 300;
+  font-feature-settings: "tnum", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+ol { list-style: none; }
+
+#stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1080px;
+  height: 1920px;
+  transform-origin: 0 0;
+  transition: opacity 4s ease;
+}
+
+/* Clock, top left */
+#clock { position: absolute; top: 72px; left: var(--gutter); }
+.time { display: flex; align-items: flex-start; line-height: 1; }
+#hm { font-size: 172px; font-weight: 200; letter-spacing: -0.03em; }
+.side { display: flex; flex-direction: column; margin: 22px 0 0 14px; gap: 10px; }
+#sec { font-size: 48px; font-weight: 300; color: var(--dim); }
+#ampm { font-size: 34px; font-weight: 400; color: var(--dim); letter-spacing: 0.06em; }
+#date { margin-top: 18px; font-size: 40px; color: var(--dim); }
+
+/* Weather, top right */
+#weather { position: absolute; top: 72px; right: var(--gutter); text-align: right; }
+.w-now { display: flex; align-items: center; justify-content: flex-end; gap: 18px; line-height: 1; }
+#w-icon svg { width: 104px; height: 104px; display: block; }
+#w-temp { font-size: 140px; font-weight: 200; letter-spacing: -0.03em; }
+#w-desc { margin-top: 10px; font-size: 40px; }
+#w-meta { margin-top: 8px; font-size: 30px; color: var(--dim); }
+#w-days { margin-top: 34px; display: grid; grid-template-columns: auto 52px 72px 72px; column-gap: 18px; row-gap: 14px; align-items: center; justify-content: end; font-size: 32px; }
+#w-days .day { color: var(--dim); text-align: left; }
+#w-days .icon svg { width: 44px; height: 44px; display: block; }
+#w-days .lo { color: var(--faint); }
+
+.icon { color: var(--fg); }
+.icon svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Agenda, lower third (keeps the middle clear for your reflection) */
+#agenda { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 110px; }
+.day-label {
+  margin: 34px 0 10px;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+#events li:first-child.day-label { margin-top: 0; }
+.event { display: grid; grid-template-columns: 22px 190px 1fr; align-items: baseline; padding: 7px 0; font-size: 38px; line-height: 1.25; }
+.event .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--faint); transform: translateY(-6px); }
+.event .when { color: var(--dim); font-size: 32px; }
+.event.happening .when { color: var(--fg); font-weight: 500; }
+.event .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#agenda-note { margin-top: 26px; font-size: 24px; color: var(--faint); }

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mirror</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Fixed 1080x1920 portrait canvas, scaled to fit the window by app.js -->
+  <main id="stage">
+    <section id="clock">
+      <div class="time"><span id="hm"></span><span class="side"><span id="sec"></span><span id="ampm"></span></span></div>
+      <div id="date"></div>
+    </section>
+
+    <section id="weather">
+      <div class="w-now"><span id="w-icon" class="icon"></span><span id="w-temp"></span></div>
+      <div id="w-desc"></div>
+      <div id="w-meta"></div>
+      <ol id="w-days"></ol>
+    </section>
+
+    <section id="agenda">
+      <ol id="events"></ol>
+      <div id="agenda-note"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

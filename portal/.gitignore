@@ -1,0 +1,4 @@
+# Holds secret calendar links
+config.json
+.venv/
+__pycache__/

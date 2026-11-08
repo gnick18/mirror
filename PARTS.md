@@ -7,12 +7,12 @@ Upstream guide: https://github.com/olm3ca/mirror (Step 2 = mainboard, issue #26 
 Status key: [x] ordered / have / done, [ ] still to buy or check
 
 ## Compute (Raspberry Pi)
-- [x] CanaKit Raspberry Pi 4 4GB Basic Kit with PiSwitch (Amazon, ordered Oct 30). Kit should include case and USB-C power supply; verify when it arrives.
-- [ ] SanDisk 64GB Ultra microSD, SDSQUJQ-064G-GZ6MA ($24.99). In Amazon cart, not yet ordered.
-- [ ] UGREEN micro HDMI to HDMI cable, 3 ft ($6.99). In Amazon cart, not yet ordered. Pi 4 has micro HDMI ports; the controller board has a full-size HDMI input.
+- [x] CanaKit Raspberry Pi 4 4GB Basic Kit with PiSwitch (Amazon, ordered Oct 30, received). Check that the case and USB-C power supply are in the box.
+- [x] SanDisk 64GB Ultra microSD, SDSQUJQ-064G-GZ6MA ($24.99). Ordered Nov 7, arriving Nov 8. The MacBook's SD slot can flash it using the card's microSD-to-SD adapter.
+- [x] UGREEN micro HDMI to HDMI cable, 3 ft ($6.99). Ordered Nov 7, arriving Nov 8. Pi 4 has micro HDMI ports; the controller board has a full-size HDMI input.
 
 ## Display controller (keeping it, decided Nov 1)
-- [x] e-qstore-2020 "HD-MI+DP+VGA LCD Controller Driver Board Monitor Kit for DV430FHM-NN0/NN1/NN5" (eBay, $35.16, option "DP+HDM+VGA board Kit"). Awaiting shipment as of Nov 1; ships from Hong Kong.
+- [x] e-qstore-2020 "HD-MI+DP+VGA LCD Controller Driver Board Monitor Kit for DV430FHM-NN0/NN1/NN5" (eBay, $35.16, option "DP+HDM+VGA board Kit"). Received by Nov 7 (shipped from Hong Kong).
   - Kit contents per listing: controller board, 5-key keypad, LVDS cable, backlight cable.
   - NOT included: inverter, power board, power adapter. Board takes DC 12V/4A.
   - Seller return policy: 5 days after receipt, buyer pays return shipping (eBay page says returns through Dec 17; check which applies if needed).
@@ -20,7 +20,7 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 - Not proven: nobody in issue #26 reported this exact DP version (they used the HDMI+DVI+VGA version, e.g. eqmarket2011 eBay item 167410340053).
 
 ### Possibly needed later
-- [ ] 12V 4A DC wall adapter, only if the Mirror's 12V rail can't run the controller (flicker / screen won't stay on).
+- [ ] 12V DC wall adapter, 3A or more, plug to match the board's DC jack (usually 5.5x2.1mm). Lets the first power-up test run without tapping the Mirror's 12V rail. Also the fix if the Mirror's 12V rail can't run the controller (flicker / screen won't stay on). The panel alone draws 0.5A typical, 0.95A max, with a 3A inrush for about 2 ms (datasheet Table 3).
 - [ ] Replacement LVDS cable, only if the kit's plug doesn't match the panel socket.
 
 ### Upstream's alternative route (not using)
@@ -32,7 +32,8 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 - [x] Seller's 24V warning: covered, the Mirror's own power board supplies 24V to the backlight driver.
 
 ## Check when the board arrives
-- [ ] Hold the kit's LVDS plug next to the panel socket: same width and latch shape? (Don't unplug the factory cable until it matches.)
+- [ ] Hold the kit's LVDS plug next to the panel socket: same width and latch shape, 51 pins? (Don't unplug the factory cable until it matches.)
+- [ ] Panel-voltage jumper on the controller (often marked 3.3V / 5V / 12V near the LVDS header) is on 12V. The panel takes 12V over the LVDS cable (datasheet pins 48 to 51).
 - [ ] 12V rail current: does it handle the Mirror board + controller at once?
 
 ## Tools

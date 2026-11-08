@@ -1,0 +1,10 @@
+{
+  "location": { "name": "Madison", "latitude": 43.07, "longitude": -89.40 },
+  "units": "imperial",
+  "clock24": false,
+  "showSeconds": true,
+  "calendarDays": 7,
+  "maxEvents": 9,
+  "dim": { "from": "22:30", "to": "06:00", "brightness": 0.35 },
+  "calendars": []
+}
