@@ -51,6 +51,16 @@ extension Bus {
 extension Date {
     /// "9:49" or "21:49", following the phone's 12/24-hour setting, without AM/PM to save space.
     var clockTime: String {
-        formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute())
+        Self.clockFormatter.string(from: self).trimmingCharacters(in: .whitespaces)
     }
+
+    // FormatStyle with amPM: .omitted pads US times to "07:47", so blank the AM/PM
+    // symbols of the locale's own short time instead.
+    private static let clockFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate("jmm")  // j picks 12 or 24 hours from the phone's setting
+        f.amSymbol = ""
+        f.pmSymbol = ""
+        return f
+    }()
 }
