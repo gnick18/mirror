@@ -79,6 +79,7 @@ ol { list-style: none; }
 
 /* Spotify now playing, right column, low enough to clear four rows of buses */
 #music { position: absolute; top: 900px; right: var(--gutter); width: 420px; display: flex; flex-direction: row-reverse; align-items: center; gap: 24px; text-align: right; }
+#music.empty { display: none; } /* the id rule above would otherwise beat .empty */
 #m-art { width: 112px; height: 112px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
 #m-art[src=""] { display: none; }
 .m-text { flex: 1; min-width: 0; }
