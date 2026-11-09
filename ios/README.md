@@ -1,13 +1,13 @@
 # McQueen Mirror (iPhone app)
 
-A native version of the phone remote (`portal/web/remote.html`) with the things a web page can't do: home-screen and Lock Screen widgets with buttons, and a Control Center toggle. It talks to the portal server's JSON API over the home Wi-Fi, so it only works at home.
+A native version of the phone remote (`portal/web/remote.html`) with the things a web page can't do: home-screen and Lock Screen widgets with buttons, and Control Center toggles. It talks to the portal server's JSON API over the home Wi-Fi, so it only works at home.
 
-- The app has the same controls as the web remote. That covers the display mode, which widgets the mirror shows, Spotify (play, pause, skip and "Play on the mirror's speakers"), the "Pretend someone's here" test switch and "Reload the mirror". It also lists the next buses, with a live "in N min" countdown. Pull down to refresh. The gear button opens Settings for the server address.
-- "Bus and Music" is a medium home-screen widget. It shows the next two buses beside what's playing, with a play/pause button and a mirror on/off button.
+- The app has the same controls as the web remote. That covers the display mode, the ring light, which widgets the mirror shows, Spotify (play, pause, skip and "Play on the mirror's speakers"), the "Pretend someone's here" test switch and "Reload the mirror". It also lists the next buses, with a live "in N min" countdown. Pull down to refresh. The gear button opens Settings for the server address.
+- "Buses and Ring Light" is a medium home-screen widget. It shows the next two buses, with a ring light button and a mirror on/off button.
 - "Next Bus" is a Lock Screen widget, in rectangular and inline sizes.
-- "Mirror Widgets" is a Control Center control. It can also go in a Lock Screen control slot.
+- "Mirror Widgets" and "Ring Light" are Control Center controls. They can also go in the Lock Screen's control slots.
 
-Mirror on/off, in the widget and in Control Center, means Auto or Mirror only. Off switches to Mirror only. On goes back to Auto, so the presence sensor decides. The actions also show up in the Shortcuts app.
+Mirror on/off, in the widget and in Control Center, means Auto or Mirror only. Off switches to Mirror only. On goes back to Auto, so the presence sensor decides. The ring light turns the edge of the mirror bright white and hides its widgets until it's turned off again. Both actions also show up in the Shortcuts app.
 
 iOS decides when widgets refresh, usually every 15 to 30 minutes. As a result, a widget shows a snapshot, not live data. Widget bus times are clock times ("Leave 10:25") rather than countdowns, and the medium widget says when it was last updated. Between refreshes, a widget drops each bus once its leave time has passed and moves the next one up. Tapping a widget button calls the API and then refreshes the widgets straight away.
 

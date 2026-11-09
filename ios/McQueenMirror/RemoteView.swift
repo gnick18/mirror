@@ -56,6 +56,10 @@ struct RemoteView: View {
                 Text(state.mode.hint)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                Toggle(isOn: Binding(get: { state.ringLight }, set: model.setRingLight)) {
+                    Text("Ring light")
+                    Text("Bright white border to light your face. Widgets hide while it's on.")
+                }
             } header: {
                 Text("Display")
             }
@@ -83,11 +87,12 @@ private struct StatusLine: View {
 
     var body: some View {
         let who = state.sensor.connected ? (state.someone ? "someone's here" : "nobody's here") : "no sensor"
+        let showing = state.ringLight ? "Ring light on" : state.show ? "Showing widgets" : "Plain mirror"
         Label {
-            Text("\(state.show ? "Showing widgets" : "Plain mirror") · \(who)")
+            Text("\(showing) · \(who)")
         } icon: {
             Circle()
-                .fill(state.show ? Color.green : Color.secondary)
+                .fill(state.show || state.ringLight ? Color.green : Color.secondary)
                 .frame(width: 10, height: 10)
         }
         .foregroundStyle(.secondary)

@@ -4,7 +4,7 @@ import WidgetKit
 /// Lock Screen widgets with the next bus.
 struct LockScreenBusWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: MirrorWidgetKind.lockScreenBus, provider: MirrorProvider(music: false)) { entry in
+        StaticConfiguration(kind: MirrorWidgetKind.lockScreenBus, provider: MirrorProvider()) { entry in
             LockScreenBusView(entry: entry)
                 .containerBackground(for: .widget) { Color.clear }
         }

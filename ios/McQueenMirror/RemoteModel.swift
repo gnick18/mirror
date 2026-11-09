@@ -50,6 +50,11 @@ final class RemoteModel {
         change(StatePatch(simulate: on))
     }
 
+    func setRingLight(_ on: Bool) {
+        state?.light = on
+        change(StatePatch(light: on))
+    }
+
     func reloadMirror() {
         change(StatePatch(reload: true))
     }
@@ -60,7 +65,7 @@ final class RemoteModel {
                 let client = try MirrorClient.current()
                 state = try await client.update(patch)
                 connection = .online
-                if patch.mode != nil || patch.hidden != nil { reloadMirrorWidgets() }
+                if patch.mode != nil || patch.light != nil { reloadMirrorWidgets() }  // what the widgets and controls show
             } catch {
                 await loadState()  // put the controls back to what the mirror really has
             }

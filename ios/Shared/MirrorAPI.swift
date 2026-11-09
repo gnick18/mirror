@@ -6,8 +6,9 @@ struct MirrorState: Codable, Equatable {
     var mode: DisplayMode
     var hidden: [String]
     var simulate: Bool
+    var light: Bool?  // the ring light. Optional because older servers don't send it.
     var someone: Bool
-    var show: Bool
+    var show: Bool  // false while the ring light is on
     var sensor: Sensor
     var version: String
 
@@ -15,6 +16,8 @@ struct MirrorState: Codable, Equatable {
         var connected: Bool
         var detail: String
     }
+
+    var ringLight: Bool { light ?? false }
 
     func isShown(_ widget: MirrorWidgetID) -> Bool { !hidden.contains(widget.rawValue) }
 }
@@ -62,6 +65,7 @@ struct StatePatch: Encodable {
     var mode: DisplayMode?
     var hidden: [String]?
     var simulate: Bool?
+    var light: Bool?
     var reload: Bool?
 }
 
@@ -84,7 +88,7 @@ struct Track: Codable, Equatable {
     var artURL: URL? { art.isEmpty ? nil : URL(string: art) }
 }
 
-enum SpotifyAction: String, Codable, CaseIterable, Sendable {
+enum SpotifyAction: String, Codable {
     case play, pause, next, previous, mirror
 }
 

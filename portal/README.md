@@ -26,6 +26,7 @@ To try the remote on your phone, start the server with `--host 0.0.0.0` and open
 - `clock24`, `showSeconds`: clock format.
 - `maxEvents`: the most events the calendar lists. It only shows what's left of today, and hides when there's nothing.
 - `dim`: night mode. Between `from` and `to`, everything fades to `brightness` (0 to 1).
+- `ringLight`: `width` of the ring light's white border, in pixels on the 1080x1920 canvas (default 160). See Ring light below.
 - `presence`: `gpio` is the Pi pin (BCM number) wired to the sensor's OUT, `holdSeconds` is how long the widgets stay up after you walk away. Restart the server after changing these.
 - `bus`: see Bus times below.
 - `spotify`: `clientId` of your Spotify app, and `device`, the name of the mirror's Spotify speaker. See Spotify below.
@@ -77,9 +78,13 @@ The remote (`/remote`, add it to your phone's home screen) has three display mod
 
 It can also control Spotify, switch single widgets off and reload the mirror page. Mode and widget choices are saved in `state.json` (git-ignored) and survive restarts. Anyone on the same Wi-Fi can open the remote.
 
-There is also a native iPhone app, McQueen Mirror, in `ios/`. It has the same controls plus home-screen and Lock Screen widgets and a Control Center toggle. See `ios/README.md`.
+There is also a native iPhone app, McQueen Mirror, in `ios/`. It has the same controls plus home-screen and Lock Screen widgets and Control Center toggles for the mirror and the ring light. See `ios/README.md`.
 
 Until the sensor is wired, or when running on the Mac, the "Pretend someone's here" switch stands in for it. The sensor is an LD2410C: VCC to 5V (pin 2), GND to ground (pin 6), OUT to GPIO17 (pin 11). It is read using gpiozero, which comes with Raspberry Pi OS, so on the Pi create the virtual environment with `python3 -m venv --system-site-packages .venv` to keep access to it.
+
+### Ring light
+
+The remote's Ring light switch turns the edge of the screen solid white, as bright as the panel goes, and leaves the middle black so it stays a plain mirror. The widgets hide while it's on, and the display mode is kept for when it goes off. Night dimming doesn't apply to the ring. It isn't saved in `state.json`, so a restart always comes back with it off. The page can only send full white, so the brightness you actually get depends on the panel's backlight setting. Set the backlight to maximum on the TV board for the brightest ring. Make the border wider or narrower with `ringLight.width` in `config.json`.
 
 ## Setting up the Pi
 

@@ -2,16 +2,16 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-/// Medium home-screen widget: the next buses beside what's playing, with buttons for
-/// play/pause and for turning the mirror's widgets on or off.
+/// Medium home-screen widget: the next buses, with buttons for the ring light and for
+/// turning the mirror's widgets on or off.
 struct CommuteWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: MirrorWidgetKind.commute, provider: MirrorProvider()) { entry in
             CommuteView(entry: entry)
                 .containerBackground(for: .widget) { Color.black }
         }
-        .configurationDisplayName("Bus and Music")
-        .description("The next buses and what the mirror is playing. Times are from the last refresh.")
+        .configurationDisplayName("Buses and Ring Light")
+        .description("The next buses, with buttons for the ring light and the mirror's widgets. Times are from the last refresh.")
         .supportedFamilies([.systemMedium])
     }
 }
@@ -24,8 +24,11 @@ struct CommuteView: View {
             HStack(alignment: .top, spacing: 14) {
                 BusColumn(entry: entry)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                MusicColumn(entry: entry)
-                    .frame(width: 128)
+                VStack(spacing: 8) {
+                    RingLightButton(on: entry.light)
+                    MirrorButton(on: entry.mirrorOn)
+                }
+                .frame(width: 118)
             }
             .environment(\.colorScheme, .dark)
         } else {
@@ -73,60 +76,28 @@ private struct BusColumn: View {
     }
 }
 
-private struct MusicColumn: View {
-    var entry: MirrorSnapshot
+/// The ring light: the mirror's edge goes bright white and its widgets hide.
+private struct RingLightButton: View {
+    var on: Bool
 
     var body: some View {
-        let music = entry.music
-        let track = music?.playing
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Group {
-                    if let art = entry.art {
-                        Image(uiImage: art).resizable().scaledToFill()
-                    } else {
-                        Image(systemName: "music.note").foregroundStyle(.secondary)
-                    }
-                }
-                .frame(width: 40, height: 40)
-                .background(Color.white.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title(music))
-                        .font(.caption.weight(.semibold))
-                        .lineLimit(2)
-                    if let artist = track?.artist, !artist.isEmpty {
-                        Text(artist)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                }
+        Button(intent: SetRingLightIntent(value: !on)) {
+            VStack(spacing: 4) {
+                Image(systemName: on ? "sun.max.fill" : "sun.max")
+                    .font(.system(size: 24, weight: .semibold))
+                Text("Ring light")
+                    .font(.caption.weight(.semibold))
+                Text(on ? "On" : "Off")
+                    .font(.caption2)
+                    .opacity(0.7)
             }
-            Spacer(minLength: 0)
-            HStack(spacing: 8) {
-                if music?.connected == true {
-                    let playing = track?.isPlaying == true
-                    Button(intent: SpotifyCommandIntent(playing ? .pause : .play)) {
-                        Image(systemName: playing ? "pause.fill" : "play.fill")
-                            .font(.system(size: 17))
-                            .frame(width: 44, height: 44)
-                            .foregroundStyle(.black)
-                            .background(.white, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(playing ? "Pause" : "Play")
-                    .invalidatableContent()
-                }
-                MirrorButton(on: entry.mirrorOn)
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .foregroundStyle(on ? .black : .white)
+            .background(on ? Color.white : Color.white.opacity(0.16), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
-    }
-
-    private func title(_ music: SpotifyStatus?) -> String {
-        guard let music else { return "Music unavailable" }
-        guard music.connected else { return "Spotify isn't connected" }
-        return music.playing?.title ?? "Nothing playing"
+        .buttonStyle(.plain)
+        .accessibilityLabel(on ? "Ring light on. Tap to turn it off." : "Ring light off. Tap to turn it on.")
+        .invalidatableContent()
     }
 }
 
@@ -136,13 +107,15 @@ private struct MirrorButton: View {
 
     var body: some View {
         Button(intent: SetMirrorDisplayIntent(value: !on)) {
-            VStack(spacing: 1) {
+            HStack(spacing: 5) {
                 Image(systemName: on ? "rectangle.portrait.inset.filled" : "rectangle.portrait")
-                    .font(.system(size: 16))
-                Text(on ? "On" : "Off")
+                    .font(.system(size: 14))
+                Text(on ? "Widgets on" : "Mirror only")
                     .font(.caption2.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
+            .frame(maxWidth: .infinity, minHeight: 40)
             .foregroundStyle(on ? .black : .white)
             .background(on ? Color.green : Color.white.opacity(0.16), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }

@@ -7,5 +7,6 @@ struct McQueenMirrorWidgets: WidgetBundle {
         CommuteWidget()
         LockScreenBusWidget()
         MirrorDisplayControl()
+        RingLightControl()
     }
 }

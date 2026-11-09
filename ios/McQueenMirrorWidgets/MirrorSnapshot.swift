@@ -1,5 +1,3 @@
-import ImageIO
-import UIKit
 import WidgetKit
 
 /// What a widget shows: one fetch from the mirror, replayed as the buses leave.
@@ -10,31 +8,26 @@ struct MirrorSnapshot: TimelineEntry {
     var busTitle: String?
     var buses: [Bus] = []
     var busMessage: String?  // why there are no buses to show
-    var music: SpotifyStatus?
-    var art: UIImage?
     var mode: DisplayMode?
+    var light = false  // the ring light
 
     var mirrorOn: Bool { (mode ?? MirrorSettings.lastMode) != .off }
 
-    static func fetch(music wantsMusic: Bool) async -> MirrorSnapshot {
+    static func fetch() async -> MirrorSnapshot {
         let now = Date()
         guard let client = try? MirrorClient.current(timeout: 8) else {
             return MirrorSnapshot(date: now, fetched: now, reachable: false)
         }
         async let state = try? client.state()
         async let report = try? client.buses()
-        async let music = wantsMusic ? (try? client.spotify()) : nil
-        let (s, r, m) = await (state, report, music)
+        let (s, r) = await (state, report)
 
-        var snapshot = MirrorSnapshot(date: now, fetched: now, reachable: s != nil || r != nil, music: m, mode: s?.mode)
+        var snapshot = MirrorSnapshot(date: now, fetched: now, reachable: s != nil || r != nil, mode: s?.mode, light: s?.ringLight ?? false)
         if let mode = s?.mode { MirrorSettings.lastMode = mode }
         if let r {
             snapshot.busTitle = r.title
             snapshot.buses = r.buses
             snapshot.busMessage = message(for: r)
-        }
-        if let url = m?.playing?.artURL, let data = try? await client.download(url) {
-            snapshot.art = thumbnail(data, maxPixels: 150)  // widgets have a tight memory limit
         }
         return snapshot
     }
@@ -65,20 +58,9 @@ struct MirrorSnapshot: TimelineEntry {
         if report.buses.isEmpty { return "No buses in the next 90 min" }
         return nil
     }
-
-    private static func thumbnail(_ data: Data, maxPixels: Int) -> UIImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceThumbnailMaxPixelSize: maxPixels,
-        ]
-        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary).map(UIImage.init(cgImage:))
-    }
 }
 
 struct MirrorProvider: TimelineProvider {
-    var music = true
-
     func placeholder(in context: Context) -> MirrorSnapshot { .sample }
 
     func getSnapshot(in context: Context, completion: @escaping (MirrorSnapshot) -> Void) {
@@ -86,11 +68,11 @@ struct MirrorProvider: TimelineProvider {
             completion(.sample)
             return
         }
-        Task { completion(await MirrorSnapshot.fetch(music: music)) }
+        Task { completion(await MirrorSnapshot.fetch()) }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<MirrorSnapshot>) -> Void) {
-        Task { completion(await MirrorSnapshot.fetch(music: music).timeline()) }
+        Task { completion(await MirrorSnapshot.fetch().timeline()) }
     }
 }
 
@@ -104,11 +86,9 @@ extension MirrorSnapshot {
                        leave: leave, depart: leave.addingTimeInterval(240), arrive: leave.addingTimeInterval(1200),
                        live: true, then: [leave.addingTimeInterval(1800), leave.addingTimeInterval(3600)])
         }
-        let track = Track(isPlaying: true, title: "Song Title", artist: "Artist", art: "", progress: 0, duration: 0,
-                          device: "Mirror", volume: nil)
         return MirrorSnapshot(date: now, fetched: now, reachable: true, busTitle: "Next buses",
                               buses: [bus("2", "#333366", "Downtown", in: 6), bus("A", "#EE3325", "East Side", in: 13)],
-                              music: SpotifyStatus(connected: true, detail: "", playing: track), mode: .auto)
+                              mode: .auto)
     }
 
     static var offline: MirrorSnapshot {
