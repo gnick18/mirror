@@ -5,7 +5,7 @@ Serves the web UI in web/ (the mirror at /, the phone remote at /remote) and a s
   /api/config    display settings from config.json (calendar URLs left out)
   /api/calendar  upcoming events from the ICS feeds listed in config.json
   /api/state     GET: what the mirror should show (presence, remote settings, file version)
-                 POST: change remote settings, e.g. {"mode": "off"} or {"hidden": ["weather"]}
+                 POST: change remote settings, e.g. {"mode": "off"}, {"hidden": ["weather"]} or {"light": true}
   /api/bus       the next buses from your stops to your destination (bus.py)
   /api/spotify   GET: what's playing. POST: {"action": "play" | "pause" | "next" | "previous" | "mirror"}
 
@@ -38,8 +38,10 @@ _ics_cache = {}  # url -> (fetched_at, bytes)
 _ics_lock = threading.Lock()
 
 # Remote settings. mode and hidden survive restarts (state.json). simulate is the
-# remote's "pretend someone's here" switch, used while no sensor is connected.
-_state = {"mode": "auto", "hidden": [], "simulate": True, "reload": 0}
+# remote's "pretend someone's here" switch, used while no sensor is connected. light is
+# the ring light: a bright white border with the widgets hidden. It isn't saved, so the
+# mirror never comes back from a reboot with it on.
+_state = {"mode": "auto", "hidden": [], "simulate": True, "light": False, "reload": 0}
 _state_lock = threading.Lock()
 SAVED_KEYS = ("mode", "hidden")
 
@@ -98,6 +100,8 @@ def update_state(patch):
             _state["hidden"] = [w for w in WIDGETS if w in patch["hidden"]]
         if isinstance(patch.get("simulate"), bool):
             _state["simulate"] = patch["simulate"]
+        if isinstance(patch.get("light"), bool):
+            _state["light"] = patch["light"]
         if patch.get("reload"):
             _state["reload"] += 1
         STATE_FILE.write_text(json.dumps({k: _state[k] for k in SAVED_KEYS}))
@@ -108,7 +112,7 @@ def current_state():
     with _state_lock:
         s = dict(_state)
     someone = presence.detected(s["simulate"])
-    show = {"on": True, "off": False}.get(s["mode"], someone)
+    show = {"on": True, "off": False}.get(s["mode"], someone) and not s["light"]
     return {
         **s,
         "someone": someone,

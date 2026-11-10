@@ -5,6 +5,8 @@
   --dim: rgba(255, 255, 255, 0.6);
   --faint: rgba(255, 255, 255, 0.32);
   --gutter: 64px;
+  --scale: 1; /* stage scale, set by app.js */
+  --ring-width: 160; /* on the 1080x1920 canvas, from config.json ringLight.width */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -126,3 +128,18 @@ ol { list-style: none; }
 .event.none .when { color: var(--fg); }
 .event .who { margin-left: 20px; font-size: 26px; color: var(--dim); } /* whose calendar: Grant or Brandon */
 #agenda-note { margin-top: 26px; font-size: 24px; color: var(--faint); }
+
+/* Ring light: full white around the screen edge, plain mirror in the middle. The hole
+   has rounded corners and a soft inner glow. Everything outside it is filled by the
+   shadow's spread, so the white reaches the very edge of the panel. */
+#ring {
+  --w: calc(var(--ring-width) * var(--scale) * 1px);
+  position: fixed;
+  inset: var(--w);
+  border-radius: calc(var(--w) * 0.6);
+  box-shadow: 0 0 0 100vmax #fff, inset 0 0 calc(var(--w) * 0.5) rgba(255, 255, 255, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+#ring.on { opacity: 1; }

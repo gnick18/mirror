@@ -42,7 +42,7 @@
     .segmented button { flex: 1; border: 0; border-radius: 8px; background: none; color: var(--dim); font: inherit; font-size: 15px; padding: 10px 4px; }
     .segmented button[aria-pressed="true"] { background: #2e2e30; color: var(--fg); font-weight: 600; }
     .hint { color: var(--dim); font-size: 14px; padding: 10px 0 14px; }
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; border-top: 1px solid var(--line); }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 8px 0; border-top: 1px solid var(--line); }
     h2 + .row { border-top: 0; }
     .row small { display: block; color: var(--dim); font-size: 13px; }
     input[type="checkbox"] {
@@ -113,6 +113,7 @@
       <button data-mode="off">Mirror only</button>
     </div>
     <p class="hint" id="mode-hint"></p>
+    <label class="row"><span>Ring light<small>Bright white border to light your face. Widgets hide while it's on.</small></span><input type="checkbox" id="light"></label>
   </section>
 
   <section>

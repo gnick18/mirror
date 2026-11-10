@@ -18,6 +18,7 @@ function fit() {
   const x = (innerWidth - STAGE_W * s) / 2;
   const y = (innerHeight - STAGE_H * s) / 2;
   $("stage").style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+  document.documentElement.style.setProperty("--scale", s); // the ring light is sized in stage pixels
 }
 
 // ---------- clock ----------
@@ -355,6 +356,7 @@ async function watchState() {
       if (first === null) first = token;
       else if (token !== first) return location.reload();
       for (const id of WIDGETS) $(id).classList.toggle("hidden", state.hidden.includes(id));
+      $("ring").classList.toggle("on", Boolean(state.light)); // the server hides the widgets while it's on
       updateOpacity();
       // Someone just walked up: get fresh bus times and music right away.
       if (visible("bus") && !was.bus) updateBus();
@@ -375,6 +377,7 @@ async function start() {
   for (;;) {
     try {
       cfg = await (await fetch("/api/config")).json();
+      if (cfg.ringLight && cfg.ringLight.width) document.documentElement.style.setProperty("--ring-width", cfg.ringLight.width);
       break;
     } catch {
       await sleep(3000);

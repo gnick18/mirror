@@ -12,6 +12,7 @@ function render() {
   document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
   $("mode-hint").textContent = MODE_HINTS[state.mode];
   document.querySelectorAll("[data-widget]").forEach((c) => (c.checked = !state.hidden.includes(c.dataset.widget)));
+  $("light").checked = Boolean(state.light);
 
   const sensor = state.sensor.connected;
   $("simulate").checked = state.simulate;
@@ -19,8 +20,9 @@ function render() {
   $("sensor-note").textContent = sensor ? "Sensor connected, so this is ignored" : "Stands in for the sensor until it's wired";
 
   const who = sensor ? (state.someone ? "someone's here" : "nobody's here") : "no sensor";
-  $("status-text").textContent = `${state.show ? "Showing widgets" : "Plain mirror"} · ${who}`;
-  $("status").classList.toggle("showing", state.show);
+  const showing = state.light ? "Ring light on" : state.show ? "Showing widgets" : "Plain mirror";
+  $("status-text").textContent = `${showing} · ${who}`;
+  $("status").classList.toggle("showing", state.show || Boolean(state.light));
 }
 
 function offline() {
@@ -50,6 +52,7 @@ document.querySelectorAll("[data-widget]").forEach((c) =>
   })
 );
 $("simulate").addEventListener("change", (e) => send({ simulate: e.target.checked }));
+$("light").addEventListener("change", (e) => send({ light: e.target.checked }));
 $("reload").addEventListener("click", () => send({ reload: true }));
 
 // ---------- music ----------
