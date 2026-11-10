@@ -15,7 +15,7 @@
 - [ ] Open the Mirror: check T-con connector type, power board/inverter voltage.
 - [ ] Contact the seller with the cable and backlight questions.
 - [ ] Order the microSD card and micro HDMI cable.
-- [ ] Flash the Pi, set up kiosk mode.
+- [x] Flash the Pi, set up kiosk mode. Done Nov 9: flashed on the Windows PC with a USB card reader (the Mac needs admin rights to write cards). Raspberry Pi OS Trixie 64-bit, hostname `mirror`, SSH by key from the Mac. `deploy.sh` and `setup-pi.sh --rotate 0` ran cleanly, and after a reboot the mirror page came up full screen on a TV. Still to do: rerun `setup-pi.sh` with `--rotate 90` once the Pi drives the panel. Rebooting and setup need the Pi password (sudo asks for it).
 - [ ] Build the portal.
 
 ## Findings from the upstream repo's issues (olm3ca/mirror)
@@ -74,6 +74,9 @@ Photos (Nov 8):
 - [Controller, top side](photos/controller-top.jpg): the DC IN jack, DP, HDMI, VGA and two 3.5 mm jacks along one edge, the white SPEAKER socket on the bottom edge, and the LVDS cable in CN2 beside the main chip.
 - [Voltage jumper](photos/controller-voltage-jumper.jpg): CN4 with the cap on the 12V pair.
 - [LVDS plugs compared](photos/lvds-plugs-compared-1.jpg) and [a second angle](photos/lvds-plugs-compared-2.jpg): the factory plug in the panel socket on top, the kit plug held below it.
+- [Back of the Mirror, case off](photos/mirror-back-open.jpg) and [the whole length](photos/mirror-back-full.jpg): the Mirror's board at the top, two bars, the T-con cover in the middle, then the power board, the two speaker boxes and the power inlet bay at the bottom. Speaker wires run up the left edge to the Mirror's board.
+- [Power board](photos/power-board.jpg): MEGMEET MP118TX, transformer EE4015-12V-24V.
+- Not committed: the close-up of the inlet bay label, because it shows the unit's serial number.
 - Still to take: the bottom side of the board, both ends of the kit's LVDS cable, the adapter's label once it arrives, and where the speaker wires plug into the Mirror's board.
 
 ## To do (updated Nov 1, replaces the list above)
@@ -83,7 +86,7 @@ Photos (Nov 8):
 - [x] Decide how the controller gets 12V for the first test. Decided Nov 7: separate 12V 5A adapter (Option A in the build day steps), arriving Nov 8. Moving to the Mirror's 12V rail can come later.
 - [x] When the controller arrives: compare the kit's LVDS plug to the panel socket before unplugging anything. Nov 8: same width, and the visible contacts match the panel's pinout (see the board check above).
 - [ ] Put the Mirror in factory-reset mode, move the panel LVDS cable to the new controller, power it from 12V, connect the Pi over HDMI, test.
-- [ ] Flash the Pi, set up kiosk mode.
+- [x] Flash the Pi, set up kiosk mode. Done Nov 9: flashed on the Windows PC with a USB card reader (the Mac needs admin rights to write cards). Raspberry Pi OS Trixie 64-bit, hostname `mirror`, SSH by key from the Mac. `deploy.sh` and `setup-pi.sh --rotate 0` ran cleanly, and after a reboot the mirror page came up full screen on a TV. Still to do: rerun `setup-pi.sh` with `--rotate 90` once the Pi drives the panel. Rebooting and setup need the Pi password (sudo asks for it).
 - [ ] Build the portal. First version started Nov 7 in `portal/`.
 - [ ] Spotify: create the developer app, put its Client ID in `portal/config.json`, run `spotify.py login` (steps in `portal/README.md`).
 - [ ] Mirror speakers: `setup-pi.sh` installs raspotify as "Mirror". Audio path decided Nov 8: the controller has a 4-pin speaker socket, so move the Mirror's speaker plugs to it and set raspotify's `LIBRESPOT_DEVICE` to the Pi's HDMI output.

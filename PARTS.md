@@ -9,6 +9,7 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 ## Compute (Raspberry Pi)
 - [x] CanaKit Raspberry Pi 4 4GB Basic Kit with PiSwitch (Amazon, ordered Oct 30, received). Check that the case and USB-C power supply are in the box.
 - [x] SanDisk 64GB Ultra microSD, SDSQUJQ-064G-GZ6MA ($24.99). Ordered Nov 7, arriving Nov 8. The MacBook's SD slot can flash it using the card's microSD-to-SD adapter.
+- [x] USB SD/microSD card reader. Bought Nov 8 to flash the card on a Windows PC, because the Mac's SD slot works but writing needs admin rights on a managed Mac. Anyone whose computer has no SD slot needs one (about $10).
 - [x] UGREEN micro HDMI to HDMI cable, 3 ft ($6.99). Ordered Nov 7, arriving Nov 8. Pi 4 has micro HDMI ports; the controller board has a full-size HDMI input.
 
 ## Presence sensor
@@ -29,6 +30,7 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 ### Possibly needed later
 - [x] Waysse 12V 5A power supply, 5.5x2.1mm plug ($9.99, Amazon). Ordered Nov 7, arriving Nov 8. Check the label shows center-positive before plugging it in. Lets the first power-up test run without tapping the Mirror's 12V rail. Also the fix if the Mirror's 12V rail can't run the controller (flicker / screen won't stay on). The panel alone draws 0.5A typical, 0.95A max, with a 3A inrush for about 2 ms (datasheet Table 3).
 - [ ] Replacement LVDS cable, only if the kit's plug doesn't match the panel socket.
+- [x] Mounting (decided Nov 8): there are no screw holes for the controller, and the panel must not be drilled. Plan: a Scotch 1 in. Indoor Mounting Square on each of the board's plastic posts, stuck to bare, cleaned metal, with electrical tape on the metal under the middle of the board. Have the squares (Ace). Still need electrical tape. Check the blue VGA socket clears the case.
 
 ### Upstream's alternative route (not using)
 - Vizio TV mainboard kit (search eBay for "HV430FHB-N10") with LVDS cable, ribbon cables, power switch board, IR receiver + remote.
