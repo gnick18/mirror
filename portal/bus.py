@@ -297,6 +297,28 @@ class Commute:
             }
             for (leave, arrive, dep, is_live, stop_name, t), *later in list(by_route.values())[: bus.get("count", 4)]
         ]
+
+        # Routes from the config with no bus soon (finished for the day, or a gap in the
+        # timetable) get a dim line saying when the next one leaves, so they don't just vanish.
+        shown = {b["route"] for b in out["buses"]}
+        waiting = [str(r) for r in bus.get("routes", []) if str(r) not in shown]
+        out["later"] = []
+        for name in waiting[: max(0, bus.get("count", 4) - len(out["buses"]))]:
+            nxt = None
+            for day in (today, today + timedelta(days=1), today + timedelta(days=2), today + timedelta(days=3)):
+                base = datetime(day.year, day.month, day.day, 12, tzinfo=tt.tz).timestamp() - 12 * 3600
+                for t in tt.trips:
+                    if t["route"] != name or not tt.runs(t["service"], day):
+                        continue
+                    leave = base + t["dep"] - tt.origins[t["from"]][0]
+                    if leave > now and (nxt is None or leave < nxt[0]):
+                        nxt = (leave, t)
+                if nxt:
+                    break
+            if nxt:
+                leave, t = nxt
+                out["later"].append({"route": name, "color": t["color"], "textColor": t["textColor"], "leave": iso(leave),
+                                     "today": datetime.fromtimestamp(leave, tt.tz).date() == datetime.now(tt.tz).date()})
         return out
 
 

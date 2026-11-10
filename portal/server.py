@@ -30,7 +30,7 @@ WEB = ROOT / "web"
 CONFIG = ROOT / "config.json"
 EXAMPLE_CONFIG = ROOT / "config.example.json"
 STATE_FILE = ROOT / "state.json"
-ICS_CACHE_SECONDS = 15 * 60
+ICS_CACHE_SECONDS = 4 * 60  # with the page asking every 5 min, new events show within about 5 to 9 min
 WIDGETS = ("clock", "weather", "bus", "music", "agenda")
 MODES = ("auto", "on", "off")  # auto = follow the presence sensor, off = plain mirror
 
@@ -193,7 +193,7 @@ def upcoming_events(cfg):
 
     tz = datetime.now().astimezone().tzinfo
     start = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
-    end = start + timedelta(days=1)  # the mirror only shows today
+    end = start + timedelta(days=2)  # today, plus tomorrow for when today is done
     events, errors = [], []
     for cal in calendars:
         try:
@@ -204,7 +204,8 @@ def upcoming_events(cfg):
             errors.append(f"{cal.get('name', 'calendar')}: {e}")
             print(f"calendar error: {errors[-1]}", file=sys.stderr)
     events.sort(key=lambda e: e["start"])
-    return {"demo": False, "events": events, "errors": errors}
+    names = [{"name": c.get("name", ""), "color": c.get("color", "")} for c in calendars]
+    return {"demo": False, "events": events, "errors": errors, "calendars": names}
 
 
 def demo_events():

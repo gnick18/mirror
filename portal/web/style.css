@@ -46,15 +46,32 @@ ol { list-style: none; }
 #w-temp { font-size: 140px; font-weight: 200; letter-spacing: -0.03em; }
 #w-desc { margin-top: 10px; font-size: 40px; }
 #w-meta { margin-top: 8px; font-size: 30px; color: var(--dim); }
-#w-days { margin-top: 34px; display: grid; grid-template-columns: auto 52px 72px 72px; column-gap: 18px; row-gap: 14px; align-items: center; justify-content: end; font-size: 32px; }
-#w-days .day { color: var(--dim); text-align: left; }
-#w-days .icon svg { width: 44px; height: 44px; display: block; }
-#w-days .lo { color: var(--faint); }
+/* Today's weather in five timepoints, with a small temperature curve above them */
+#w-days { margin-top: 30px; width: 330px; margin-left: auto; display: grid; grid-template-columns: repeat(5, 1fr); row-gap: 0; text-align: center; }
+#w-days .w-curve-row { grid-column: 1 / -1; order: 2; height: 52px; margin: 8px 0 2px; }
+.w-curve { width: 100%; height: 52px; display: block; overflow: visible; }
+.w-curve polyline { fill: none; stroke: var(--faint); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.w-curve circle { fill: var(--fg); }
+.w-hour { display: contents; }
+.w-hour .t { order: 1; font-size: 22px; white-space: nowrap; color: var(--dim); }
+.w-hour .t small { font-size: 15px; margin-left: 2px; letter-spacing: 0.02em; }
+.w-hour.now .t { color: var(--fg); font-weight: 500; }
+.w-hour .icon { order: 3; justify-self: center; margin-top: 6px; }
+.w-hour .icon svg { width: 46px; height: 46px; display: block; }
+.w-hour .temp { order: 4; font-size: 30px; margin-top: 4px; }
+.w-hour .pop { order: 5; font-size: 22px; color: #7fb3ff; min-height: 28px; }
+
+/* A little color on the weather icons */
+.icon .sun { stroke: #ffd36b; }
+.icon .moon { stroke: #d9dcf0; }
+.icon .drops { stroke: #7fb3ff; stroke-width: 2.2; }
+.icon .flake { fill: #e8f2ff; stroke: none; }
+.icon .bolt { stroke: #ffd36b; stroke-width: 2.4; }
 
 .icon { color: var(--fg); }
 .icon svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
-.empty { display: none; } /* nothing to show right now */
+.empty { display: none !important; } /* nothing to show right now. !important beats id rules like #music { display: flex } */
 
 /* Bus times, left column under the clock */
 #bus { position: absolute; top: 400px; left: var(--gutter); width: 620px; }
@@ -75,6 +92,8 @@ ol { list-style: none; }
 .bus .then { margin-left: 16px; font-size: 28px; color: var(--faint); }
 .bus .live { width: 26px; height: 26px; margin-left: 8px; vertical-align: 6px; fill: none; stroke: var(--dim); stroke-width: 2; stroke-linecap: round; }
 .bus.sched .leave { color: var(--dim); } /* timetable only, no bus tracked yet */
+.bus.later { opacity: 0.55; } /* route with no bus soon */
+.bus.later .leave { font-size: 32px; }
 #bus-note { margin-top: 12px; font-size: 22px; color: var(--faint); }
 
 /* Spotify now playing, right column, low enough to clear four rows of buses */
@@ -98,9 +117,12 @@ ol { list-style: none; }
   color: var(--dim);
 }
 #events li:first-child.day-label { margin-top: 0; }
-.event { display: grid; grid-template-columns: 22px 190px 1fr; align-items: baseline; padding: 7px 0; font-size: 38px; line-height: 1.25; }
+.event { display: grid; grid-template-columns: 22px 190px 1fr auto; align-items: baseline; padding: 7px 0; font-size: 38px; line-height: 1.25; }
 .event .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--faint); transform: translateY(-6px); }
 .event .when { color: var(--dim); font-size: 32px; }
 .event.happening .when { color: var(--fg); font-weight: 500; }
 .event .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event.none { opacity: 0.5; }
+.event.none .when { color: var(--fg); }
+.event .who { margin-left: 20px; font-size: 26px; color: var(--dim); } /* whose calendar: Grant or Brandon */
 #agenda-note { margin-top: 26px; font-size: 24px; color: var(--faint); }

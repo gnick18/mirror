@@ -87,10 +87,10 @@ const SUN = (cx, cy, r) => {
     const p = (k) => `${(cx + Math.cos(a) * r * k).toFixed(1)} ${(cy + Math.sin(a) * r * k).toFixed(1)}`;
     return `M${p(1.6)}L${p(2.2)}`;
   });
-  return `<circle cx="${cx}" cy="${cy}" r="${r}"/><path d="${rays.join("")}"/>`;
+  return `<g class="sun"><circle cx="${cx}" cy="${cy}" r="${r}"/><path d="${rays.join("")}"/></g>`;
 };
 const MOON = (s, dx, dy) =>
-  `<path transform="translate(${dx} ${dy}) scale(${s})" d="M30 9A15 15 0 1 0 39 33A12 12 0 0 1 30 9Z"/>`;
+  `<path class="moon" transform="translate(${dx} ${dy}) scale(${s})" d="M30 9A15 15 0 1 0 39 33A12 12 0 0 1 30 9Z"/>`;
 
 function iconSvg(kind, isDay = true) {
   const up = (svg) => `<g transform="translate(0 -6)">${svg}</g>`;
@@ -99,10 +99,10 @@ function iconSvg(kind, isDay = true) {
     partly: (isDay ? SUN(17, 17, 5) : MOON(0.6, 4, 4)) + `<g transform="translate(3 3)">${CLOUD}</g>`,
     cloud: CLOUD,
     fog: '<path d="M9 17H39M6 24H34M12 31H42M9 38H31"/>',
-    rain: up(CLOUD) + '<path d="M19 33L16 40M26 33L23 40M33 33L30 40"/>',
+    rain: up(CLOUD) + '<path class="drops" d="M19 33L16 40M26 33L23 40M33 33L30 40"/>',
     snow: up(CLOUD) + [[18, 35], [25, 38], [32, 35], [21, 43], [29, 43]]
-      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.3" fill="currentColor"/>`).join(""),
-    storm: up(CLOUD) + '<path d="M26 29L21 37H27L23 45"/>',
+      .map(([x, y]) => `<circle class="flake" cx="${x}" cy="${y}" r="1.6"/>`).join(""),
+    storm: up(CLOUD) + '<path class="bolt" d="M26 29L21 37H27L23 45"/>',
   };
   return `<svg viewBox="0 0 48 48" aria-hidden="true">${parts[kind] || parts.cloud}</svg>`;
 }
@@ -111,8 +111,9 @@ async function updateWeather() {
   const { latitude, longitude } = cfg.location;
   const metric = cfg.units === "metric";
   const q = new URLSearchParams({
-    latitude, longitude, timezone: "auto", forecast_days: 6,
+    latitude, longitude, timezone: "auto", forecast_days: 2,
     current: "temperature_2m,apparent_temperature,weather_code,is_day",
+    hourly: "temperature_2m,weather_code,precipitation_probability,is_day",
     daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
     temperature_unit: metric ? "celsius" : "fahrenheit",
   });
@@ -141,17 +142,33 @@ function renderWeather(w) {
   if (d.precipitation_probability_max[0] >= 20) meta.push(`${d.precipitation_probability_max[0]}% precip`);
   $("w-meta").textContent = meta.join("  ·  ");
 
-  const rows = [];
-  for (let i = 1; i < d.time.length; i++) {
-    const [y, m, day] = d.time[i].split("-").map(Number);
-    const name = new Date(y, m - 1, day).toLocaleDateString(undefined, { weekday: "short" });
-    const kindI = (WMO[d.weather_code[i]] || [])[1];
-    rows.push(
-      `<span class="day">${name}</span><span class="icon">${iconSvg(kindI)}</span>` +
-      `<span class="hi">${t(d.temperature_2m_max[i])}</span><span class="lo">${t(d.temperature_2m_min[i])}</span>`
-    );
-  }
-  $("w-days").innerHTML = rows.join("");
+  // Today in five timepoints, three hours apart, starting with the current hour.
+  // Late in the evening the last points run into the night and early morning.
+  const h = w.hourly;
+  const start = Math.max(0, h.time.indexOf(c.time.slice(0, 13) + ":00"));
+  const pts = [0, 3, 6, 9, 12].map((k) => start + k).filter((i) => i < h.time.length);
+  const hourLabel = (iso, k) => {
+    if (k === 0) return "Now";
+    const hr = Number(iso.slice(11, 13));
+    return `${hr % 12 || 12}<small>${hr < 12 ? "AM" : "PM"}</small>`;
+  };
+  const temps = pts.map((i) => h.temperature_2m[i]);
+  const lo = Math.min(...temps), hi = Math.max(...temps), span = Math.max(4, hi - lo);
+  // A small temperature curve above the numbers: higher dot = warmer.
+  const W = 100 * pts.length, y = (v) => 44 - ((v - lo) / span) * 36;
+  const xy = temps.map((v, k) => [50 + k * 100, y(v)]);
+  const curve = `<svg class="w-curve" viewBox="0 0 ${W} 52" preserveAspectRatio="none" aria-hidden="true">` +
+    `<polyline points="${xy.map((p) => p.join(",")).join(" ")}"/>` +
+    xy.map(([x, yy]) => `<circle cx="${x}" cy="${yy}" r="5"/>`).join("") + "</svg>";
+  const cols = pts.map((i, k) => {
+    const kindI = (WMO[h.weather_code[i]] || [])[1];
+    const rain = h.precipitation_probability[i];
+    return `<li class="w-hour${k === 0 ? " now" : ""}"><span class="t">${hourLabel(h.time[i], k)}</span>` +
+      `<span class="icon">${iconSvg(kindI, h.is_day[i] === 1)}</span>` +
+      `<span class="temp">${t(h.temperature_2m[i])}</span>` +
+      `<span class="pop">${rain >= 20 ? rain + "%" : ""}</span></li>`;
+  });
+  $("w-days").innerHTML = `<li class="w-curve-row">${curve}</li>` + cols.join("");
 }
 
 // ---------- calendar ----------
@@ -178,39 +195,58 @@ async function updateAgenda() {
   renderAgenda();
 }
 
-// Only what's left of today. The whole section hides when there's nothing.
+// What's left of today, with each person's name. When today is done it shows tomorrow
+// instead, and when tomorrow is empty too, each calendar gets a "Nothing left today" line.
 function renderAgenda() {
   const now = new Date();
   const today = startOfDay(now);
   const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-  const events = (agenda.events || [])
-    .map((e) => ({
-      ...e,
-      start: e.allDay ? localDate(e.start) : new Date(e.start),
-      end: e.allDay ? localDate(e.end) : new Date(e.end),
-    }))
-    .filter((e) => e.end > now && e.start < tomorrow)
-    .slice(0, cfg.maxEvents || 6);
+  const dayAfter = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2);
+  const all = (agenda.events || []).map((e) => ({
+    ...e,
+    start: e.allDay ? localDate(e.start) : new Date(e.start),
+    end: e.allDay ? localDate(e.end) : new Date(e.end),
+  }));
+  const max = cfg.maxEvents || 6;
+  const left = all.filter((e) => e.end > now && e.start < tomorrow);
+  const next = all.filter((e) => e.end > tomorrow && e.start < dayAfter && e.start >= tomorrow);
+  const cals = agenda.calendars || [];
+  const showTomorrow = !left.length && next.length > 0;
+  const events = (showTomorrow ? next : left).slice(0, max);
 
-  const html = events.length ? ['<li class="day-label">Today</li>'] : [];
+  const who = (name, color) =>
+    name && !agenda.demo ? `<span class="who"${color ? ` style="color:${color}"` : ""}>${escapeHtml(name)}</span>` : "";
+  const html = [];
+  if (events.length || cals.length) html.push(`<li class="day-label">${showTomorrow ? "Tomorrow" : "Today"}</li>`);
   events.forEach((e, i) => {
-    const happening = e.start <= now && now < e.end;
+    const happening = !showTomorrow && e.start <= now && now < e.end;
     const when = e.allDay ? "All day" : happening ? "Now" : formatTime(e.start);
     const fade = Math.max(0.35, 1 - Math.max(0, i - 3) * 0.12); // later items fade out
     const dot = e.color ? ` style="background:${e.color}"` : "";
     html.push(
       `<li class="event${happening && !e.allDay ? " happening" : ""}" style="opacity:${fade}">` +
       `<span class="dot"${dot}></span><span class="when">${when}</span>` +
-      `<span class="title">${escapeHtml(e.title)}</span></li>`
+      `<span class="title">${escapeHtml(e.title)}</span>${who(e.calendar, e.color)}</li>`
     );
   });
+  // Anyone with nothing left today gets a quiet line, so you know the calendar is working.
+  if (!showTomorrow) {
+    for (const c of cals) {
+      if (left.some((e) => e.calendar === c.name)) continue;
+      const dot = c.color ? ` style="background:${c.color}"` : "";
+      html.push(
+        `<li class="event none"><span class="dot"${dot}></span><span class="when">${escapeHtml(c.name)}</span>` +
+        `<span class="title">Nothing left today</span></li>`
+      );
+    }
+  }
   $("events").innerHTML = html.join("");
 
   const notes = [];
   if (agenda.demo && events.length) notes.push("Sample events. Add calendar links to config.json.");
   if (agenda.errors && agenda.errors.length) notes.push(`Calendar problem: ${agenda.errors.join("; ")}`);
   $("agenda-note").textContent = notes.join(" ");
-  $("agenda").classList.toggle("empty", !events.length && !notes.length);
+  $("agenda").classList.toggle("empty", !html.length && !notes.length);
 }
 
 function escapeHtml(s) {
@@ -256,6 +292,17 @@ function renderBus() {
       `<span class="leave">${leave}</span><span class="info">${escapeHtml(info.join("  ·  "))}</span></li>`
     );
   });
+  // Configured routes with nothing soon, for example route 28 after its last evening trip.
+  for (const b of bus.later || []) {
+    const when = formatTime(new Date(b.leave));
+    const text = b.today ? `Next at ${when}` : `No more today`;
+    const info = b.today ? "No bus in the next 90 min" : `First bus ${when}`;
+    html.push(
+      `<li class="bus sched later">` +
+      `<span class="route" style="background:${b.color};color:${b.textColor}">${escapeHtml(b.route)}</span>` +
+      `<span class="leave">${text}</span><span class="info">${escapeHtml(info)}</span></li>`
+    );
+  }
   $("bus-title").textContent = bus.title || "";
   $("buses").innerHTML = html.join("");
   let note = bus.note || "";
@@ -264,7 +311,7 @@ function renderBus() {
   else if (!rows.length) note = "";
   $("bus-note").textContent = note;
   // Hidden when not set up, outside the configured hours, or with no buses soon.
-  $("bus").classList.toggle("empty", !bus.configured || (!rows.length && !bus.loading && !bus.error));
+  $("bus").classList.toggle("empty", !bus.configured || (!rows.length && !(bus.later || []).length && !bus.loading && !bus.error));
 }
 
 // ---------- music ----------
@@ -338,7 +385,7 @@ async function start() {
   updateAgenda();
   updateBus();
   updateMusic();
-  setInterval(updateAgenda, 10 * 60e3);
+  setInterval(updateAgenda, 5 * 60e3);
   setInterval(renderAgenda, 60e3);
   setInterval(renderBus, 15e3);
   setInterval(renderMusic, 1000);
