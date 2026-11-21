@@ -297,7 +297,9 @@ function renderBus() {
   for (const b of bus.later || []) {
     const when = formatTime(new Date(b.leave));
     const text = b.today ? `Next at ${when}` : `No more today`;
-    const info = b.today ? "No bus in the next 90 min" : `First bus ${when}`;
+    // Within 90 minutes means the timetable has a bus but live tracking doesn't (yet).
+    const soon = new Date(b.leave) - Date.now() < 90 * 60e3;
+    const info = !b.today ? `First bus ${when}` : soon ? "Timetable time, not tracked live" : "No bus in the next 90 min";
     html.push(
       `<li class="bus sched later">` +
       `<span class="route" style="background:${b.color};color:${b.textColor}">${escapeHtml(b.route)}</span>` +

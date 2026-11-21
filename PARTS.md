@@ -27,6 +27,12 @@ Status key: [x] ordered / have / done, [ ] still to buy or check
 - Why it's OK: panel model matches; the panel's LVDS input is a standard wire-harness socket (not FFC); the Mirror's power board already has 24V for the backlight and 12V for a controller.
 - Not proven: nobody in issue #26 reported this exact DP version (they used the HDMI+DVI+VGA version, e.g. eqmarket2011 eBay item 167410340053).
 
+## Speakers (ordered Nov 15, arriving Nov 16)
+- [x] 10 pairs of JST PH 2.0 4-pin plugs with 22 AWG wire, 10 cm (Amazon, $8.99). One plug clicks into the controller's SPEAKER socket (CNA1) and carries both channels.
+- [x] WAGO 221-412 lever connectors, bag of 10 (Amazon, $7.47). Four join the plug's wires to the Mirror's speaker wires. They grip 24 to 12 AWG, which is why the plugs are 22 AWG and not the common 26 AWG ones.
+- [x] DOWELL wire stripper, 22 to 30 AWG (Amazon, $7.99).
+- Plan: each Mirror speaker box has two drivers on two twisted pairs (orange/black and red/blue). Use one pair per side, orange/black first, and tape off red/blue. If a side sounds thin, that pair is the tweeter, so swap to red/blue. The Mirror's own speaker plugs don't fit the controller socket.
+
 ### Possibly needed later
 - [x] Waysse 12V 5A power supply, 5.5x2.1mm plug ($9.99, Amazon). Ordered Nov 7, arriving Nov 8. Check the label shows center-positive before plugging it in. Lets the first power-up test run without tapping the Mirror's 12V rail. Also the fix if the Mirror's 12V rail can't run the controller (flicker / screen won't stay on). The panel alone draws 0.5A typical, 0.95A max, with a 3A inrush for about 2 ms (datasheet Table 3).
 - [ ] Replacement LVDS cable, only if the kit's plug doesn't match the panel socket.
